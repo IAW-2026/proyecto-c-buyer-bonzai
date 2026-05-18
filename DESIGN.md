@@ -1,9 +1,9 @@
-# Design System Document: The Botanical Curator
+# Design System Document: Bonzai
 
 ## 1. Overview & Creative North Star: "The Living Archive"
 This design system moves beyond the transactional nature of e-commerce or digital catalogs. Our Creative North Star is **The Living Archive**. It represents a shift from "app-like" layouts to a "High-End Editorial" experience. 
 
-We reject the rigid, boxy constraints of traditional web design. Instead, we embrace **intentional asymmetry**, **breathable negative space**, and **tonal depth**. The interface should feel like a curated botanical journal—tactile, sophisticated, and quiet. We lead with the "Bonzai" spirit: the art of deliberate composition where what is left out is just as important as what is included.
+We reject the rigid, boxy constraints of traditional web design. Instead, we embrace **intentional asymmetry**, **breathable negative space**, and **tonal depth**. The interface should feel like a curated plant marketplace journal—tactile, sophisticated, and quiet. We lead with the "Bonzai" spirit: the art of deliberate composition where what is left out is just as important as what is included.
 
 ---
 
@@ -37,7 +37,7 @@ To evoke the feel of a greenhouse, use **Glassmorphism** for floating navigation
 We pair a high-contrast Serif with a functional Sans-Serif to balance heritage with modern utility.
 
 *   **Display & Headline (Newsreader):** This is our "Editorial Voice." Use `display-lg` and `display-md` for storytelling and product titles. Do not be afraid of large-scale type; let it breathe and occasionally overlap with images for a bespoke feel.
-*   **Title, Body, & Labels (Manrope):** This is our "Curator’s Note." Manrope provides clean, geometric legibility. Use `body-lg` for descriptions and `label-md` for technical specifications (e.g., "Origin," "Sunlight Requirements").
+*   **Title, Body, & Labels (Manrope):** This is our "Buyer's Note." Manrope provides clean, geometric legibility. Use `body-lg` for descriptions and `label-md` for technical specifications (e.g., "Origin," "Sunlight Requirements").
 
 **Hierarchy Tip:** Always pair a large `display-sm` Newsreader header with a `label-md` Manrope sub-header in all-caps with `0.1em` letter spacing to create an authoritative, museum-label aesthetic.
 
@@ -84,7 +84,7 @@ We do not use shadows to simulate "height"; we use tonal shifts and ambient ligh
 *   **Prioritize Type Scale:** Let the difference between `display-lg` and `body-sm` do the work of creating hierarchy.
 
 ### Don’t:
-*   **No High-Contrast Borders:** Never use 100% opaque lines to separate content. It kills the "Botanical" softness.
+*   **No High-Contrast Borders:** Never use 100% opaque lines to separate content. It kills the plant-marketplace softness.
 *   **No Heavy Shadows:** Avoid "Material Design" style heavy shadows. Our world is lit by soft, diffused greenhouse light.
 *   **No "Pure" White:** Never use `#ffffff` for large backgrounds. It is too sterile. Stick to the `#faf9f4` (Bone) base.
 *   **No Crowding:** If in doubt, add 16px of extra margin. Premium is synonymous with space.
