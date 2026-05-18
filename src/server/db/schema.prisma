@@ -6,3 +6,26 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model BuyerProfile {
+  id            String @id @default(uuid())
+  clerk_user_id String @unique
+  cart          Cart?
+}
+
+model Cart {
+  id       String @id @default(uuid())
+  buyer_id String @unique
+
+  buyer BuyerProfile @relation(fields: [buyer_id], references: [id])
+  items CartItem[]
+}
+
+model CartItem {
+  id         String @id @default(uuid())
+  cart_id    String
+  product_id String
+  quantity   Int    @default(1)
+
+  cart Cart @relation(fields: [cart_id], references: [id])
+}
