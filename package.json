@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name",
     "db:studio": "prisma studio",
     "db": "docker exec -it local-postgres psql -U postgres -d buyer-bonzai",
