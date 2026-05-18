@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "eslint",
     "db:generate": "dlx prisma generate",
-    "db:migrate": "dlx prisma migrate dev --name"
+    "db:migrate": "dlx prisma migrate dev --name",
+    "db": "docker exec -it local-postgres psql -U postgres -d buyer-bonzai",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
