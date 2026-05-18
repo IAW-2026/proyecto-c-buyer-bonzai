@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:migrate": "dlx prisma migrate dev --name",
-    "db:studio": "dlx prisma studio",
+    "db:migrate": "prisma migrate dev --name",
+    "db:studio": "prisma studio",
     "db": "docker exec -it local-postgres psql -U postgres -d buyer-bonzai",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down"
