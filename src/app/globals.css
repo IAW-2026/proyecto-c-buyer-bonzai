@@ -45,3 +45,8 @@ body {
   background: rgb(3 39 26 / 0.16);
   color: var(--color-primary);
 }
+
+button:not(:disabled),
+[role='button']:not(:disabled) {
+  cursor: pointer;
+}
