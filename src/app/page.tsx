@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ProductGrid } from '@/features/shop/components/product-grid';
 
 export default async function Home() {
@@ -7,15 +8,15 @@ export default async function Home() {
         <ProductGrid />
 
         <div className="mt-24 text-center">
-          <button
-            type="button"
+          <Link
+            href="/shop"
             className="group mx-auto flex cursor-pointer flex-col items-center"
           >
             <span className="mb-4 font-label text-xs uppercase tracking-[0.2em] text-secondary">
               Discover More
             </span>
             <span className="h-16 w-px bg-outline-variant transition-all duration-500 group-hover:h-24" />
-          </button>
+          </Link>
         </div>
       </div>
     </main>
