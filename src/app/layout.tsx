@@ -21,6 +21,9 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: 'Bonzai',
   description: 'A plant marketplace for thoughtful buyers.',
+  appleWebApp: {
+    title: 'Bonzai',
+  },
 };
 
 export default function RootLayout({
