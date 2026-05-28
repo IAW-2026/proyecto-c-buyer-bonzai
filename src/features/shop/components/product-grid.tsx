@@ -1,11 +1,10 @@
-import { Product } from '@/features/shop/types';
 import { ProductCard } from '@/features/shop/components/product-card';
 import { getProducts } from '@/features/shop/data/products';
 
 export async function ProductGrid() {
-  const [featuredProduct, ...secondaryProducts] = await getProducts();
+  const products = await getProducts();
 
-  if (!featuredProduct) {
+  if (products.length === 0) {
     return (
       <section className="bg-surface-container-low px-6 py-16 text-center">
         <h2 className="font-headline text-3xl text-primary">
@@ -23,17 +22,11 @@ export async function ProductGrid() {
       className="grid grid-cols-1 gap-8 md:grid-cols-12 lg:gap-12"
       aria-label="Curated products"
     >
-      <ProductCard
-        product={featuredProduct}
-        variant="featured"
-        priority
-        className="md:col-span-8"
-      />
-
-      {secondaryProducts.map((product: Product) => (
+      {products.map((product, index) => (
         <ProductCard
           key={product.id}
           product={product}
+          priority={index === 0}
           className="md:col-span-4"
         />
       ))}

@@ -86,6 +86,27 @@ export async function getProductById(id: string) {
   return products.find((product) => product.id === id) ?? null;
 }
 
+export async function getRelatedProducts(product: Product, limit = 3) {
+  const productTags = new Set(product.tags);
+
+  return products
+    .filter((candidate) => candidate.id !== product.id)
+    .map((candidate) => ({
+      product: candidate,
+      score:
+        (candidate.category === product.category ? 4 : 0) +
+        candidate.tags.filter((tag) => productTags.has(tag)).length * 2 +
+        (candidate.careLabel === product.careLabel ? 1 : 0),
+    }))
+    .sort(
+      (current, next) =>
+        next.score - current.score ||
+        current.product.name.localeCompare(next.product.name),
+    )
+    .slice(0, limit)
+    .map(({ product: candidate }) => candidate);
+}
+
 export async function getProductCategories() {
   return Array.from(new Set(products.map((product) => product.category)))
     .filter((category) => category !== 'Accessories')
