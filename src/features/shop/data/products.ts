@@ -85,3 +85,81 @@ export async function getProducts() {
 export async function getProductById(id: string) {
   return products.find((product) => product.id === id) ?? null;
 }
+
+export async function getProductCategories() {
+  return Array.from(new Set(products.map((product) => product.category)))
+    .filter((category) => category !== 'Accessories')
+    .sort();
+}
+
+export type ProductSearchItem = {
+  id: string;
+  label: string;
+  type: 'product' | 'category' | 'tag';
+  detail?: string;
+};
+
+export async function getProductSearchItems(): Promise<ProductSearchItem[]> {
+  const categories = await getProductCategories();
+  const tags = Array.from(
+    new Set(products.flatMap((product) => product.tags)),
+  ).sort();
+
+  return [
+    ...products.map((product) => ({
+      id: product.id,
+      label: product.name,
+      type: 'product' as const,
+      detail: product.category,
+    })),
+    ...categories.map((category) => ({
+      id: category,
+      label: category,
+      type: 'category' as const,
+      detail: 'Category',
+    })),
+    ...tags.map((tag) => ({
+      id: tag,
+      label: tag,
+      type: 'tag' as const,
+      detail: 'Care note',
+    })),
+  ];
+}
+
+export async function searchProducts({
+  query,
+  category,
+}: {
+  query?: string;
+  category?: string;
+}) {
+  const normalizedQuery = query?.trim().toLowerCase() ?? '';
+  const normalizedCategory = category?.trim().toLowerCase() ?? '';
+
+  return products.filter((product) => {
+    const matchesCategory = normalizedCategory
+      ? product.category.toLowerCase() === normalizedCategory
+      : true;
+
+    if (!matchesCategory) {
+      return false;
+    }
+
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    const searchableText = [
+      product.name,
+      product.category,
+      product.careLabel,
+      product.description,
+      ...product.tags,
+    ]
+      .join(' ')
+      .toLowerCase();
+
+    return searchableText.includes(normalizedQuery);
+  });
+}

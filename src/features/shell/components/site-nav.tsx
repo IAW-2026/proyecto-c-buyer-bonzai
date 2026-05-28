@@ -1,8 +1,19 @@
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
+import { Suspense } from 'react';
+import {
+  getProductCategories,
+  getProductSearchItems,
+} from '@/features/shop/data/products';
+import { CategoryMenu } from './category-menu';
 import { SearchBar } from './search-bar';
 
-export function SiteNav() {
+export async function SiteNav() {
+  const [categories, searchItems] = await Promise.all([
+    getProductCategories(),
+    getProductSearchItems(),
+  ]);
+
   return (
     <header className="relative z-30 w-full bg-surface/90 backdrop-blur-[20px]">
       <nav className="mx-auto flex min-h-14 w-full max-w-360 items-center gap-3 px-4 py-2 sm:px-6 lg:px-8">
@@ -12,18 +23,55 @@ export function SiteNav() {
             className="group flex cursor-pointer items-center gap-2"
             aria-label="Bonzai home"
           >
-            <LogoMark />
             <span className="font-headline text-lg tracking-tight text-primary transition group-hover:text-primary-container sm:text-xl">
               Bonzai
             </span>
           </Link>
         </div>
 
-        <SearchBar className="mx-auto max-w-xl" />
+        <Suspense fallback={<SearchBarFallback className="mx-auto max-w-xl" />}>
+          <SearchBar className="mx-auto max-w-xl" items={searchItems} />
+        </Suspense>
 
         <AccountControls className="flex shrink-0" />
       </nav>
+
+      <nav
+        className="mx-auto flex w-full max-w-360 flex-wrap items-center gap-2 px-4 pb-3 sm:px-6 lg:px-8"
+        aria-label="Shop sections"
+      >
+        <CategoryMenu categories={categories} />
+
+        <Link
+          href="/shop?q=Accessories"
+          className="flex h-9 shrink-0 items-center rounded-full px-4 font-label text-xs font-semibold uppercase tracking-[0.16em] text-secondary transition hover:bg-surface-container-low hover:text-primary focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Accessories
+        </Link>
+
+        <a
+          href="https://proyecto-c-seller-bonzai.vercel.app/"
+          className="flex h-9 shrink-0 items-center rounded-full px-4 font-label text-xs font-semibold uppercase tracking-[0.16em] text-secondary transition hover:bg-surface-container-low hover:text-primary focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Sell
+        </a>
+
+        <Link
+          href="/shop?q=care"
+          className="flex h-9 shrink-0 items-center rounded-full px-4 font-label text-xs font-semibold uppercase tracking-[0.16em] text-secondary transition hover:bg-surface-container-low hover:text-primary focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Care
+        </Link>
+      </nav>
     </header>
+  );
+}
+
+function SearchBarFallback({ className = '' }: { className?: string }) {
+  return (
+    <div className={`min-w-0 flex-1 ${className}`} aria-hidden="true">
+      <div className="h-10 rounded-lg bg-surface-container" />
+    </div>
   );
 }
 
@@ -69,27 +117,6 @@ function AccountControls({ className = '' }: { className?: string }) {
         />
       </Show>
     </div>
-  );
-}
-
-function LogoMark() {
-  return (
-    <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-on-primary shadow-[0_18px_34px_rgba(27,28,26,0.06)]">
-      <svg
-        aria-hidden="true"
-        className="size-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.7"
-      >
-        <path d="M12 20V9" />
-        <path d="M12 9c-4.2 0-6.8-1.8-8-5 4.8-.4 7.6 1.3 8 5Z" />
-        <path d="M12 12c4.4 0 7-1.9 8-5-4.7-.5-7.5 1.2-8 5Z" />
-      </svg>
-    </span>
   );
 }
 
