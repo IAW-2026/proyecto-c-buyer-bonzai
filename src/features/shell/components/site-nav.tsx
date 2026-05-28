@@ -30,13 +30,13 @@ export function SiteNav() {
 function AccountControls({ className = '' }: { className?: string }) {
   return (
     <div className={`items-center gap-3 ${className}`}>
-      <button
-        type="button"
+      <Link
+        href="/cart"
         className="flex size-10 cursor-pointer items-center justify-center rounded-lg text-primary transition hover:bg-surface-container-high focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
         aria-label="Open shopping bag"
       >
         <ShoppingBagIcon className="size-5" />
-      </button>
+      </Link>
 
       <Show when="signed-out">
         <SignInButton>

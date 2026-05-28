@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Product } from '../types';
+import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
 import { formatCurrency } from '@/lib/formatters';
 
 type ProductCardProps = {
@@ -22,10 +23,14 @@ export function ProductCard({
     : product.imageAspect === 'portrait'
       ? 'aspect-[4/5]'
       : 'aspect-square';
-  const imageSizes = isFeatured ? '(min-width: 768px) 66vw, 100vw' : '(min-width: 768px) 33vw, 100vw';
+  const imageSizes = isFeatured
+    ? '(min-width: 768px) 66vw, 100vw'
+    : '(min-width: 768px) 33vw, 100vw';
 
   return (
-    <article className={`group relative cursor-pointer bg-surface-container-lowest p-4 sm:p-6 ${className}`}>
+    <article
+      className={`group relative cursor-pointer bg-surface-container-lowest p-4 sm:p-6 ${className}`}
+    >
       <Link
         href={`/p/${product.id}`}
         className="absolute inset-0 z-10 cursor-pointer focus-visible:outline focus-visible:outline-offset-4 focus-visible:outline-primary"
@@ -33,7 +38,9 @@ export function ProductCard({
         <span className="sr-only">View {product.name}</span>
       </Link>
 
-      <div className={`relative mb-6 overflow-hidden bg-surface-container-highest ${imageFrameClassName}`}>
+      <div
+        className={`relative mb-6 overflow-hidden bg-surface-container-highest ${imageFrameClassName}`}
+      >
         <Image
           src={product.image.src}
           alt={product.image.alt}
@@ -46,7 +53,11 @@ export function ProductCard({
         />
       </div>
 
-      {isFeatured ? <FeaturedProductContent product={product} /> : <StandardProductContent product={product} />}
+      {isFeatured ? (
+        <FeaturedProductContent product={product} />
+      ) : (
+        <StandardProductContent product={product} />
+      )}
     </article>
   );
 }
@@ -56,18 +67,17 @@ function FeaturedProductContent({ product }: { product: Product }) {
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
       <div className="max-w-xl">
         <ProductTags tags={product.tags} />
-        <h2 className="mb-3 font-headline text-3xl leading-tight text-primary">{product.name}</h2>
-        <p className="font-body text-sm leading-6 text-secondary">{product.description}</p>
+        <h2 className="mb-3 font-headline text-3xl leading-tight text-primary">
+          {product.name}
+        </h2>
+        <p className="font-body text-sm leading-6 text-secondary">
+          {product.description}
+        </p>
       </div>
       <div className="shrink-0 lg:text-right">
-        <p className="mb-4 font-headline text-2xl text-primary">{formatCurrency(product.price)}</p>
-        <button
-          type="button"
-          className="relative z-20 inline-flex cursor-pointer items-center gap-2 rounded-sm bg-primary px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          Add to Bag
-          <PlusIcon className="size-4" />
-        </button>
+        <p className="mb-4 font-headline text-2xl text-primary">
+          {formatCurrency(product.price)}
+        </p>
       </div>
     </div>
   );
@@ -76,18 +86,16 @@ function FeaturedProductContent({ product }: { product: Product }) {
 function StandardProductContent({ product }: { product: Product }) {
   return (
     <div>
-      <h2 className="mb-1 font-headline text-xl leading-tight text-primary">{product.name}</h2>
+      <h2 className="mb-1 font-headline text-xl leading-tight text-primary">
+        {product.name}
+      </h2>
       <p className="mb-4 font-label text-xs uppercase tracking-[0.18em] text-secondary">
         {product.careLabel}
       </p>
       <div className="flex items-center justify-between gap-4">
-        <p className="font-headline text-lg text-primary">{formatCurrency(product.price)}</p>
-        <button
-          type="button"
-          className="relative z-20 cursor-pointer font-label text-xs uppercase tracking-[0.16em] text-primary underline decoration-primary/40 underline-offset-4 transition hover:text-secondary focus-visible:outline focus-visible:outline-offset-4 focus-visible:outline-primary"
-        >
-          Quick Add
-        </button>
+        <p className="font-headline text-lg text-primary">
+          {formatCurrency(product.price)}
+        </p>
       </div>
     </div>
   );

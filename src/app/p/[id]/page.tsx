@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCuratedProductById } from '@/features/shop/data/products';
+import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
+import { getProductById } from '@/features/shop/data/products';
 import { formatCurrency } from '@/lib/formatters';
 
 type ProductPageProps = {
@@ -10,7 +11,7 @@ type ProductPageProps = {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
-  const product = await getCuratedProductById(id);
+  const product = await getProductById(id);
 
   if (!product) {
     notFound();
@@ -51,12 +52,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {formatCurrency(product.price)}
           </p>
 
-          <button
-            type="button"
+          <AddToCartButton
+            productId={product.id}
             className="mt-8 inline-flex cursor-pointer rounded-sm bg-primary px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Add to Bag
-          </button>
+          </AddToCartButton>
         </section>
       </article>
     </main>
