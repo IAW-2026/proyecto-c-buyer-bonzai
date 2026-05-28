@@ -6,6 +6,14 @@
 - App Router entrypoints live in `src/app`; the `@/*` alias maps to `src/*`.
 - This is a single-package app; `pnpm-workspace.yaml` only configures PNPM build approvals.
 
+## Product Context
+
+- The product is called Bonzai.
+- This repository is the buyer-facing part of Bonzai, a marketplace for plants and plant-related accessories.
+- Keep public UI branding as `Bonzai`.
+- The visual direction should still follow `DESIGN.md`: high-end editorial, plant-focused, calm, spacious, and premium.
+- Product listing UI should remain data-driven because product information will later come from a fetch API owned by another app.
+
 ## Commands
 
 - `pnpm dev`: start the Next dev server.
