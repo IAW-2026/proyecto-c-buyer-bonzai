@@ -16,7 +16,7 @@ export async function SiteNav() {
 
   return (
     <header className="relative z-30 w-full bg-surface/90 backdrop-blur-[20px]">
-      <nav className="mx-auto flex min-h-14 w-full max-w-360 items-center gap-3 px-4 py-2 sm:px-6 lg:px-8">
+      <nav className="mx-auto flex min-h-14 w-full max-w-360 items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex shrink-0 items-center justify-between gap-3">
           <Link
             href="/"
@@ -37,7 +37,7 @@ export async function SiteNav() {
       </nav>
 
       <nav
-        className="mx-auto flex w-full max-w-360 flex-wrap items-center gap-2 px-4 pb-3 sm:px-6 lg:px-8"
+        className="mx-auto flex w-full max-w-360 flex-wrap justify-center items-center gap-2 px-4 pb-3 sm:px-6 lg:px-8"
         aria-label="Shop sections"
       >
         <CategoryMenu categories={categories} />
@@ -87,7 +87,7 @@ function AccountControls({ className = '' }: { className?: string }) {
       </Link>
 
       <Show when="signed-out">
-        <SignInButton>
+        <SignInButton mode="modal">
           <button
             type="button"
             className="hidden cursor-pointer rounded-lg px-3 py-2 font-label text-xs font-semibold uppercase tracking-[0.12em] text-primary transition hover:bg-surface-container-high focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary sm:inline-flex"
@@ -95,7 +95,7 @@ function AccountControls({ className = '' }: { className?: string }) {
             Sign in
           </button>
         </SignInButton>
-        <SignUpButton>
+        <SignUpButton mode="modal">
           <button
             type="button"
             className="cursor-pointer rounded-lg bg-primary px-3 py-2 font-label text-xs font-semibold uppercase tracking-[0.12em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"

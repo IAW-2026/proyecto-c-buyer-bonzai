@@ -59,7 +59,7 @@ function CategoryMenuContent({ categories }: CategoryMenuProps) {
         type="button"
         aria-expanded={isOpen}
         aria-controls={menuId}
-        className="flex h-9 cursor-pointer items-center gap-2 rounded-full bg-surface-container-low px-4 font-label text-xs font-semibold uppercase tracking-[0.16em] text-primary transition hover:bg-surface-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="flex h-9 shrink-0 items-center gap-1.5 rounded-full px-4 font-label text-xs font-semibold uppercase tracking-[0.16em] text-secondary transition hover:bg-surface-container-low hover:text-primary focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
         onClick={() => setIsOpen((current) => !current)}
       >
         Categories
