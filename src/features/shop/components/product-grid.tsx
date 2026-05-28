@@ -1,8 +1,9 @@
-import { ProductCard } from './product-card';
-import { getCuratedProducts } from '@/features/shop/data/products';
+import { Product } from '@/features/shop/types';
+import { ProductCard } from '@/features/shop/components/product-card';
+import { getProducts } from '@/features/shop/data/products';
 
 export async function ProductGrid() {
-  const [featuredProduct, ...secondaryProducts] = await getCuratedProducts();
+  const [featuredProduct, ...secondaryProducts] = await getProducts();
 
   if (!featuredProduct) {
     return (
@@ -29,7 +30,7 @@ export async function ProductGrid() {
         className="md:col-span-8"
       />
 
-      {secondaryProducts.map((product) => (
+      {secondaryProducts.map((product: Product) => (
         <ProductCard
           key={product.id}
           product={product}

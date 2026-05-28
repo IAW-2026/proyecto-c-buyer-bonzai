@@ -1,6 +1,6 @@
-import type { Product } from '../types';
+import type { Product } from '@/features/shop/types';
 
-const curatedProducts: Product[] = [
+const products: Product[] = [
   {
     id: 'monstera-deliciosa-grande',
     name: 'Monstera Deliciosa Grande',
@@ -21,7 +21,8 @@ const curatedProducts: Product[] = [
     name: 'Juniperus Procumbens',
     category: 'Arboreal',
     careLabel: 'Aged 12 Years',
-    description: 'An ancient juniper bonsai trained into a disciplined windswept silhouette.',
+    description:
+      'An ancient juniper bonsai trained into a disciplined windswept silhouette.',
     price: 320,
     tags: ['Arboreal'],
     imageAspect: 'portrait',
@@ -35,7 +36,8 @@ const curatedProducts: Product[] = [
     name: "Echeveria 'Rose'",
     category: 'Desert Flora',
     careLabel: 'High Light',
-    description: 'A compact succulent with geometric rosette symmetry and warm blush edges.',
+    description:
+      'A compact succulent with geometric rosette symmetry and warm blush edges.',
     price: 42,
     tags: ['Desert Flora'],
     imageAspect: 'square',
@@ -49,7 +51,8 @@ const curatedProducts: Product[] = [
     name: 'Ficus Lyrata Bambino',
     category: 'Tropical',
     careLabel: 'Indoors',
-    description: 'A sculptural fiddle leaf fig with glossy leaves and a compact indoor posture.',
+    description:
+      'A sculptural fiddle leaf fig with glossy leaves and a compact indoor posture.',
     price: 68,
     tags: ['Tropical'],
     imageAspect: 'square',
@@ -63,7 +66,8 @@ const curatedProducts: Product[] = [
     name: 'Cura Vessel No. 4',
     category: 'Accessories',
     careLabel: 'Handmade Ceramic',
-    description: 'An artisan ceramic vessel in grounded earth tones for elevated plant staging.',
+    description:
+      'An artisan ceramic vessel in grounded earth tones for elevated plant staging.',
     price: 115,
     tags: ['Accessories'],
     imageAspect: 'square',
@@ -74,10 +78,10 @@ const curatedProducts: Product[] = [
   },
 ];
 
-export async function getCuratedProducts() {
-  return curatedProducts;
+export async function getProducts() {
+  return products;
 }
 
-export async function getCuratedProductById(id: string) {
-  return curatedProducts.find((product) => product.id === id) ?? null;
+export async function getProductById(id: string) {
+  return products.find((product) => product.id === id) ?? null;
 }
