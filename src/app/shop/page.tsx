@@ -1,5 +1,6 @@
-import Link from 'next/link';
-import { ProductCard } from '@/features/shop/components/product-card';
+import { ShopCategoryFilters } from '@/features/shop/components/shop-category-filters';
+import { ShopPagination } from '@/features/shop/components/shop-pagination';
+import { ShopResults } from '@/features/shop/components/shop-results';
 import {
   getProductCategories,
   searchProducts,
@@ -9,8 +10,11 @@ type ShopQueryPageProps = {
   searchParams: Promise<{
     q?: string | string[];
     category?: string | string[];
+    page?: string | string[];
   }>;
 };
+
+const PRODUCTS_PER_PAGE = 20;
 
 export default async function ShopQueryPage({
   searchParams,
@@ -18,11 +22,20 @@ export default async function ShopQueryPage({
   const params = await searchParams;
   const query = getFirstParam(params.q)?.trim() ?? '';
   const category = getFirstParam(params.category)?.trim() ?? '';
+  const requestedPage = getPageParam(params.page);
   const [products, categories] = await Promise.all([
     searchProducts({ query, category }),
     getProductCategories(),
   ]);
   const hasFilters = Boolean(query || category);
+  const pageCount = Math.ceil(products.length / PRODUCTS_PER_PAGE);
+  const totalPages = Math.max(pageCount, 1);
+  const currentPage = clampPage(requestedPage, totalPages);
+  const paginatedProducts = products.slice(
+    (currentPage - 1) * PRODUCTS_PER_PAGE,
+    currentPage * PRODUCTS_PER_PAGE,
+  );
+  const shouldShowPagination = pageCount > 1;
 
   return (
     <main className="bg-surface px-4 pb-24 pt-12 text-on-surface sm:px-6 lg:px-8">
@@ -41,56 +54,21 @@ export default async function ShopQueryPage({
           </p>
         </section>
 
-        <div className="mb-10 flex flex-wrap gap-2" aria-label="Category filters">
-          <Link
-            href="/shop"
-            className={`rounded-full px-4 py-2 font-label text-xs font-semibold uppercase tracking-[0.16em] transition focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary ${
-              !category
-                ? 'bg-primary text-on-primary'
-                : 'bg-surface-container-low text-secondary hover:text-primary'
-            }`}
-          >
-            All
-          </Link>
-          {categories.map((currentCategory) => (
-            <Link
-              key={currentCategory}
-              href={`/shop?category=${encodeURIComponent(currentCategory)}`}
-              className={`rounded-full px-4 py-2 font-label text-xs font-semibold uppercase tracking-[0.16em] transition focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                category === currentCategory
-                  ? 'bg-primary text-on-primary'
-                  : 'bg-surface-container-low text-secondary hover:text-primary'
-              }`}
-            >
-              {currentCategory}
-            </Link>
-          ))}
-        </div>
+        <ShopCategoryFilters
+          categories={categories}
+          selectedCategory={category}
+        />
 
-        {products.length > 0 ? (
-          <section
-            className="grid grid-cols-1 gap-8 md:grid-cols-12 lg:gap-12"
-            aria-label="Search results"
-          >
-            {products.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                priority={index === 0}
-                className="md:col-span-4"
-              />
-            ))}
-          </section>
-        ) : (
-          <section className="bg-surface-container-low px-6 py-16 text-center">
-            <h2 className="font-headline text-3xl text-primary">
-              No matches found
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-secondary">
-              Try a broader plant name, category, or care note to keep exploring.
-            </p>
-          </section>
-        )}
+        <ShopResults products={paginatedProducts} />
+
+        {shouldShowPagination ? (
+          <ShopPagination
+            currentPage={currentPage}
+            totalPages={pageCount}
+            query={query}
+            category={category}
+          />
+        ) : null}
       </div>
     </main>
   );
@@ -98,6 +76,16 @@ export default async function ShopQueryPage({
 
 function getFirstParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function getPageParam(value: string | string[] | undefined) {
+  const page = Number(getFirstParam(value));
+
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
+function clampPage(page: number, totalPages: number) {
+  return Math.min(Math.max(page, 1), totalPages);
 }
 
 function resultSummary({
