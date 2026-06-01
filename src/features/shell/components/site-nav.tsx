@@ -5,6 +5,7 @@ import {
   getProductCategories,
   getProductSearchItems,
 } from '@/features/shop/data/products';
+import { CartNavLink } from './cart-nav-link';
 import { CategoryMenu } from './category-menu';
 import { SearchBar } from './search-bar';
 
@@ -78,13 +79,7 @@ function SearchBarFallback({ className = '' }: { className?: string }) {
 function AccountControls({ className = '' }: { className?: string }) {
   return (
     <div className={`items-center gap-3 ${className}`}>
-      <Link
-        href="/cart"
-        className="flex size-10 cursor-pointer items-center justify-center rounded-lg text-primary transition hover:bg-surface-container-high focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
-        aria-label="Open shopping bag"
-      >
-        <ShoppingBagIcon className="size-5" />
-      </Link>
+      <CartNavLink />
 
       <Show when="signed-out">
         <SignInButton mode="modal">
@@ -117,23 +112,5 @@ function AccountControls({ className = '' }: { className?: string }) {
         />
       </Show>
     </div>
-  );
-}
-
-function ShoppingBagIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1.8"
-    >
-      <path d="M6.5 8.5h11l-.75 11h-9.5l-.75-11Z" />
-      <path d="M9 8.5a3 3 0 0 1 6 0" />
-    </svg>
   );
 }

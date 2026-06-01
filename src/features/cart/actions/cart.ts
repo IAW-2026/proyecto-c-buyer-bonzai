@@ -10,12 +10,29 @@ import {
   removeCartProduct,
 } from '@/features/cart/data/cart';
 
+export type AddCartItemState = {
+  status: 'idle' | 'success';
+  submissionId: number;
+};
+
 export async function addCartItem(formData: FormData) {
   const userId = await requireUserId();
   const productId = readProductId(formData);
 
   await addProductToCart(userId, productId);
   revalidateCartPaths();
+}
+
+export async function addCartItemWithState(
+  previousState: AddCartItemState,
+  formData: FormData,
+): Promise<AddCartItemState> {
+  await addCartItem(formData);
+
+  return {
+    status: 'success',
+    submissionId: previousState.submissionId + 1,
+  };
 }
 
 export async function incrementCartItem(formData: FormData) {

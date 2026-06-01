@@ -45,3 +45,6 @@ src/generated/prisma
 
 # harness
 .atl
+
+# documentation
+/docs

@@ -1,6 +1,9 @@
 import { ClerkProvider } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import type { Metadata } from 'next';
 import { Manrope, Newsreader } from 'next/font/google';
+import { CartProvider } from '@/features/cart/components/cart-provider';
+import { getCartForUser } from '@/features/cart/data/cart';
 import { ShopAssistantButton } from '@/features/shell/components/shop-assistant-button';
 import { SiteFooter } from '@/features/shell/components/site-footer';
 import { SiteNav } from '@/features/shell/components/site-nav';
@@ -26,11 +29,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialCartQuantity = await getInitialCartQuantity();
+
   return (
     <html
       lang="en"
@@ -38,12 +43,26 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-surface text-on-surface font-body">
         <ClerkProvider>
-          <SiteNav />
-          <div className="min-h-screen">{children}</div>
+          <CartProvider initialQuantity={initialCartQuantity}>
+            <SiteNav />
+            <div className="min-h-screen">{children}</div>
+          </CartProvider>
           <SiteFooter />
           <ShopAssistantButton />
         </ClerkProvider>
       </body>
     </html>
   );
+}
+
+async function getInitialCartQuantity() {
+  const { isAuthenticated, userId } = await auth();
+
+  if (!isAuthenticated || !userId) {
+    return 0;
+  }
+
+  const cart = await getCartForUser(userId);
+
+  return cart.totalQuantity;
 }
