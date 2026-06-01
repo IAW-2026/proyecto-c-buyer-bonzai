@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum CartStatus {
+  ACTIVE
+  CHECKED_OUT
+}
+
 model BuyerProfile {
   id            String @id @default(uuid())
   clerk_user_id String @unique
@@ -16,6 +21,10 @@ model BuyerProfile {
 model Cart {
   id       String @id @default(uuid())
   buyer_id String @unique
+  status  CartStatus @default(ACTIVE)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   buyer BuyerProfile @relation(fields: [buyer_id], references: [id])
   items CartItem[]
