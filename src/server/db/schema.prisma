@@ -15,7 +15,7 @@ enum CartStatus {
 model BuyerProfile {
   id            String @id @default(uuid())
   clerk_user_id String @unique
-  cart          Cart?
+  cart          Cart[]
 }
 
 model Cart {
