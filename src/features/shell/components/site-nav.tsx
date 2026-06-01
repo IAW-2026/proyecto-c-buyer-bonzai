@@ -23,7 +23,7 @@ export async function SiteNav() {
             className="group flex cursor-pointer items-center gap-2"
             aria-label="Bonzai home"
           >
-            <span className="font-headline text-lg tracking-tight text-primary transition group-hover:text-primary-container sm:text-xl">
+            <span className="font-headline text-lg tracking-tight mt-1 text-primary transition group-hover:text-primary-container sm:text-xl">
               Bonzai
             </span>
           </Link>
