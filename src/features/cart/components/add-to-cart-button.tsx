@@ -69,9 +69,7 @@ export function AddToCartButton({
                     ? 'Added to Bag'
                     : 'Add to Bag'}
               </Calligraph>
-              {showSuccess ? (
-                <CheckIcon className="size-3.5 motion-safe:animate-cart-check-in" />
-              ) : null}
+              {showSuccess ? <CheckIcon className="size-3.5" /> : null}
             </span>
           </button>
           <span className="sr-only" role="status" aria-live="polite">
