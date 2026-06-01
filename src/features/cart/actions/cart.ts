@@ -5,10 +5,16 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
   addProductToCart,
+  clearCartForUser,
   decrementCartProduct,
   incrementCartProduct,
   removeCartProduct,
 } from '@/features/cart/data/cart';
+
+export type AddCartItemState = {
+  status: 'idle' | 'success';
+  submissionId: number;
+};
 
 export async function addCartItem(formData: FormData) {
   const userId = await requireUserId();
@@ -16,6 +22,18 @@ export async function addCartItem(formData: FormData) {
 
   await addProductToCart(userId, productId);
   revalidateCartPaths();
+}
+
+export async function addCartItemWithState(
+  previousState: AddCartItemState,
+  formData: FormData,
+): Promise<AddCartItemState> {
+  await addCartItem(formData);
+
+  return {
+    status: 'success',
+    submissionId: previousState.submissionId + 1,
+  };
 }
 
 export async function incrementCartItem(formData: FormData) {
@@ -66,6 +84,13 @@ export async function removeCartItemById(productId: string) {
   revalidateCartPaths();
 }
 
+export async function clearCart() {
+  const userId = await requireUserId();
+
+  await clearCartForUser(userId);
+  revalidateCartPaths();
+}
+
 async function requireUserId() {
   const { isAuthenticated, userId } = await auth();
 
@@ -98,4 +123,7 @@ function validateProductId(productId: string) {
 
 function revalidateCartPaths() {
   revalidatePath('/cart');
+  revalidatePath('/checkout');
+  revalidatePath('/checkout/review');
+  revalidatePath('/checkout/payment');
 }

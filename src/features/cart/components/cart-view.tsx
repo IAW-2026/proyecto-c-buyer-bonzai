@@ -2,16 +2,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useOptimistic, useTransition } from 'react';
+import { useEffect, useOptimistic, useTransition } from 'react';
 import {
   decrementCartItemById,
   incrementCartItemById,
   removeCartItemById,
 } from '@/features/cart/actions/cart';
 import type { CartLineItem, CartViewModel } from '../types';
+import { useCart } from './cart-provider';
 import { formatCurrency } from '@/lib/formatters';
-
-const PAYMENT_HREF = 'https://proyecto-c-payments-bonzai.vercel.app/';
 
 type CartOptimisticAction =
   | { type: 'increment'; productId: string }
@@ -23,21 +22,29 @@ type CartViewProps = {
 };
 
 export function CartView({ cart }: CartViewProps) {
+  const { dispatchCart } = useCart();
   const [isPending, startTransition] = useTransition();
   const [optimisticCart, updateOptimisticCart] = useOptimistic(
     cart,
     applyOptimisticCartAction,
   );
 
+  useEffect(() => {
+    dispatchCart({ type: 'set', quantity: cart.totalQuantity });
+  }, [cart.totalQuantity, dispatchCart]);
+
   function incrementItem(productId: string) {
     startTransition(async () => {
       updateOptimisticCart({ type: 'increment', productId });
+      dispatchCart({ type: 'increment' });
       await incrementCartItemById(productId);
     });
   }
 
   function decrementItem(productId: string) {
-    const item = optimisticCart.items.find((cartItem) => cartItem.productId === productId);
+    const item = optimisticCart.items.find(
+      (cartItem) => cartItem.productId === productId,
+    );
 
     if (!item || item.quantity === 1) {
       return;
@@ -45,13 +52,23 @@ export function CartView({ cart }: CartViewProps) {
 
     startTransition(async () => {
       updateOptimisticCart({ type: 'decrement', productId });
+      dispatchCart({ type: 'decrement' });
       await decrementCartItemById(productId);
     });
   }
 
   function removeItem(productId: string) {
+    const item = optimisticCart.items.find(
+      (cartItem) => cartItem.productId === productId,
+    );
+
+    if (!item) {
+      return;
+    }
+
     startTransition(async () => {
       updateOptimisticCart({ type: 'remove', productId });
+      dispatchCart({ type: 'decrement', delta: item.quantity });
       await removeCartItemById(productId);
     });
   }
@@ -99,12 +116,12 @@ export function CartView({ cart }: CartViewProps) {
           </div>
         </dl>
 
-        <a
-          href={PAYMENT_HREF}
+        <Link
+          href="/checkout"
           className="mt-8 flex w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-8 py-4 text-center font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Continue
-        </a>
+          Completar pedido
+        </Link>
       </aside>
     </div>
   );
