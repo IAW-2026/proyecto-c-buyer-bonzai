@@ -12,8 +12,6 @@ import type { CartLineItem, CartViewModel } from '../types';
 import { useCart } from './cart-provider';
 import { formatCurrency } from '@/lib/formatters';
 
-const PAYMENT_HREF = 'https://proyecto-c-payments-bonzai.vercel.app/';
-
 type CartOptimisticAction =
   | { type: 'increment'; productId: string }
   | { type: 'decrement'; productId: string }
@@ -118,12 +116,12 @@ export function CartView({ cart }: CartViewProps) {
           </div>
         </dl>
 
-        <a
-          href={PAYMENT_HREF}
+        <Link
+          href="/checkout"
           className="mt-8 flex w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-8 py-4 text-center font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Continue
-        </a>
+          Completar pedido
+        </Link>
       </aside>
     </div>
   );

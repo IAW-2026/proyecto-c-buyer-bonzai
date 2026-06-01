@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
   addProductToCart,
+  clearCartForUser,
   decrementCartProduct,
   incrementCartProduct,
   removeCartProduct,
@@ -83,6 +84,13 @@ export async function removeCartItemById(productId: string) {
   revalidateCartPaths();
 }
 
+export async function clearCart() {
+  const userId = await requireUserId();
+
+  await clearCartForUser(userId);
+  revalidateCartPaths();
+}
+
 async function requireUserId() {
   const { isAuthenticated, userId } = await auth();
 
@@ -115,4 +123,7 @@ function validateProductId(productId: string) {
 
 function revalidateCartPaths() {
   revalidatePath('/cart');
+  revalidatePath('/checkout');
+  revalidatePath('/checkout/review');
+  revalidatePath('/checkout/payment');
 }

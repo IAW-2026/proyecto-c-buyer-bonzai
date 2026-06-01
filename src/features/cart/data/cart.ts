@@ -146,6 +146,20 @@ export async function removeCartProduct(
   });
 }
 
+export async function clearCartForUser(clerkUserId: string) {
+  const cart = await getExistingCartForUser(clerkUserId);
+
+  if (!cart) {
+    return;
+  }
+
+  await prisma.cartItem.deleteMany({
+    where: {
+      cart_id: cart.id,
+    },
+  });
+}
+
 async function getOrCreateCartForUser(clerkUserId: string) {
   const buyer = await prisma.buyerProfile.upsert({
     where: { clerk_user_id: clerkUserId },

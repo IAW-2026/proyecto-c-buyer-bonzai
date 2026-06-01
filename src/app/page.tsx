@@ -1,9 +1,15 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { PaymentResultDialog } from '@/features/checkout/components/payment-result-dialog';
 import { ProductGrid } from '@/features/shop/components/product-grid';
 
 export default async function Home() {
   return (
     <main className="bg-surface px-4 pb-24 pt-10 text-on-surface sm:px-6 lg:px-8">
+      <Suspense fallback={null}>
+        <PaymentResultDialog />
+      </Suspense>
+
       <div className="mx-auto max-w-360">
         <ProductGrid />
 
