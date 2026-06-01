@@ -5,10 +5,10 @@ import { useEffect } from 'react';
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
-  reset: () => void;
+  unstable_retry: () => void;
 };
 
-export default function ErrorPage({ error, reset }: ErrorPageProps) {
+export default function ErrorPage({ error, unstable_retry }: ErrorPageProps) {
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -53,7 +53,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
-                onClick={reset}
+                onClick={unstable_retry}
                 className="inline-flex cursor-pointer justify-center rounded-sm bg-primary px-7 py-3 font-label text-xs font-semibold uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Try again
