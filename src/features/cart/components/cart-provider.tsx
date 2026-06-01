@@ -32,9 +32,10 @@ export function CartProvider({
   children: ReactNode;
   initialQuantity: number;
 }) {
+  const quantity = sanitizeQuantity(initialQuantity);
   const [state, dispatchCart] = useReducer(cartReducer, {
-    quantity: sanitizeQuantity(initialQuantity),
-    pulseKey: 0,
+    quantity,
+    pulseKey: quantity,
   });
 
   useEffect(() => {

@@ -84,9 +84,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <AddToCartButton
                 productId={product.id}
                 className="inline-flex cursor-pointer justify-center rounded-sm bg-primary px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
-              >
-                Add to Bag
-              </AddToCartButton>
+              />
             </div>
           </div>
 

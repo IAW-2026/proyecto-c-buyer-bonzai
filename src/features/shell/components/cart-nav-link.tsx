@@ -26,7 +26,7 @@ export function CartNavLink() {
       <AnimatePresence initial={false}>
         {quantity > 0 ? (
           <motion.span
-            className="absolute -right-1 -top-1 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center overflow-hidden rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-on-primary shadow-[0_0_0_2px_var(--color-surface)]"
+            className="absolute -right-1 -top-1 flex h-4.5 min-w-4.5 items-center justify-center overflow-hidden rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-on-primary shadow-[0_0_0_2px_var(--color-surface)]"
             initial={
               shouldReduceMotion
                 ? { opacity: 0 }

@@ -8,6 +8,7 @@ import {
 import { CartNavLink } from './cart-nav-link';
 import { CategoryMenu } from './category-menu';
 import { SearchBar } from './search-bar';
+import PurchasesNavLink from './purchases-nav-link';
 
 export async function SiteNav() {
   const [categories, searchItems] = await Promise.all([
@@ -79,6 +80,8 @@ function SearchBarFallback({ className = '' }: { className?: string }) {
 function AccountControls({ className = '' }: { className?: string }) {
   return (
     <div className={`items-center gap-3 ${className}`}>
+      <PurchasesNavLink />
+
       <CartNavLink />
 
       <Show when="signed-out">
