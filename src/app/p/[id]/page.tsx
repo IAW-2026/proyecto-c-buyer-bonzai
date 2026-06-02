@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
 import { ProductCard, ProductTags } from '@/features/shop/components/product-card';
 import {
+  getProductAiDescription,
   getProductById,
   getRelatedProducts,
 } from '@/features/shop/data/products';
@@ -21,7 +22,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const relatedProducts = await getRelatedProducts(product);
+  const [aiDescription, relatedProducts] = await Promise.all([
+    getProductAiDescription(product),
+    getRelatedProducts(product),
+  ]);
   const productTags = Array.from(new Set([product.category, ...product.tags]));
 
   return (
@@ -96,20 +100,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </section>
       </article>
 
-      <section className="mx-auto mt-20 max-w-360 border-y border-outline-variant/70 py-10">
-        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-          <div>
+      <section className="mx-auto mt-24 max-w-360 bg-surface-container-low px-5 py-12 sm:px-8 lg:px-12 lg:py-14">
+        <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
+          <div className="max-w-md">
+            <div className="mb-5 inline-flex items-center gap-3 bg-surface-container-lowest px-4 py-3 text-primary">
+              <AiGeneratedIcon />
+              <span className="font-label text-[10px] uppercase tracking-[0.22em] text-secondary">
+                AI-generated read
+              </span>
+            </div>
             <p className="mb-3 font-label text-xs uppercase tracking-[0.22em] text-secondary">
               The Bonzai read
             </p>
             <h2 className="font-headline text-4xl leading-tight text-primary sm:text-5xl">
-              A quieter way to buy living objects.
+              A living note, composed for this piece.
             </h2>
           </div>
-          <p className="max-w-3xl font-body text-sm leading-7 text-secondary sm:text-base sm:leading-8">
-            Each piece is presented as more than inventory: form, care rhythm,
-            and interior presence are surfaced before checkout so the product
-            feels considered, not commodity-driven.
+          <p className="max-w-3xl bg-surface px-6 py-7 font-body text-base leading-8 text-secondary sm:px-8 sm:py-9 sm:text-lg sm:leading-9">
+            {aiDescription}
           </p>
         </div>
       </section>
@@ -147,6 +155,29 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </section>
       ) : null}
     </main>
+  );
+}
+
+function AiGeneratedIcon() {
+  return (
+    <span
+      aria-hidden="true"
+      className="grid size-9 place-items-center rounded-full bg-primary text-on-primary"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      >
+        <path d="M12 3.5 13.5 8l4.5 1.5-4.5 1.5L12 15.5 10.5 11 6 9.5 10.5 8 12 3.5Z" />
+        <path d="M18 14.5 18.8 17l2.2.8-2.2.7L18 21l-.8-2.5-2.2-.7 2.2-.8.8-2.5Z" />
+        <path d="M5.5 13.5 6 15l1.5.5L6 16l-.5 1.5L5 16l-1.5-.5L5 15l.5-1.5Z" />
+      </svg>
+    </span>
   );
 }
 

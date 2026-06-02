@@ -1,4 +1,7 @@
+import 'server-only';
+
 import type { Product } from '@/features/shop/types';
+import { generateProductDescription } from '@/features/shop/ai/product-descriptions';
 
 const products: Product[] = [
   {
@@ -533,7 +536,17 @@ export async function getProducts() {
 }
 
 export async function getProductById(id: string) {
-  return products.find((product) => product.id === id) ?? null;
+  return products.find((candidate) => candidate.id === id) ?? null;
+}
+
+export async function getProductAiDescription(product: Product) {
+  return generateProductDescription({
+    name: product.name,
+    category: product.category,
+    careLabel: product.careLabel,
+    tags: product.tags,
+    imageAlt: product.image.alt,
+  });
 }
 
 export async function getRelatedProducts(product: Product, limit = 3) {
