@@ -8,3 +8,10 @@ Esta app corresponde al rol del comprador en los proyectos de tipo **B (Delivery
 ---
 
 Enunciado completo: <https://iaw-2026.github.io/proyecto/>
+
+## Environment
+
+Server-side Gemini description generation uses these optional variables:
+
+- `GEMINI_API_KEY`: Gemini API key used only on the server. Do not expose it with a `NEXT_PUBLIC_` prefix.
+- `GEMINI_MODEL`: Optional model override. Defaults to `gemini-3.5-flash`.
