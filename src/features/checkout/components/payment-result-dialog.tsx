@@ -61,7 +61,7 @@ export function PaymentResultDialog() {
       aria-labelledby="payment-result-title"
       aria-describedby="payment-result-description"
       onCancel={closeDialog}
-      className="w-[calc(100%-2rem)] max-w-lg bg-surface-container-lowest p-0 text-on-surface shadow-[0_24px_60px_rgb(27_28_25/0.16)] backdrop:bg-on-surface/30 backdrop:backdrop-blur-sm"
+      className="m-auto w-[calc(100%-2rem)] max-w-lg bg-surface-container-lowest p-0 text-on-surface shadow-[0_24px_60px_rgb(27_28_25/0.16)] backdrop:bg-on-surface/30 backdrop:backdrop-blur-sm"
     >
       <div className="p-8 sm:p-10">
         <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
