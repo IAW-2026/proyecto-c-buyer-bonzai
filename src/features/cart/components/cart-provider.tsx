@@ -49,6 +49,16 @@ export function CartProvider({
   );
 }
 
+export function CartQuantityHydrator({ quantity }: { quantity: number }) {
+  const { dispatchCart } = useCart();
+
+  useEffect(() => {
+    dispatchCart({ type: 'set', quantity });
+  }, [dispatchCart, quantity]);
+
+  return null;
+}
+
 export function useCart() {
   const context = useContext(CartContext);
 

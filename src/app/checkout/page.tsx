@@ -4,6 +4,8 @@ import { getCartForUser } from '@/features/cart/data/cart';
 import { SignedOutCartPage } from '@/features/cart/components/signed-out-cart-page';
 import { CheckoutForm } from '@/features/checkout/components/checkout-form';
 import { OrderSummary } from '@/features/checkout/components/order-summary';
+import { CheckoutFlowSkeleton } from '@/features/checkout/components/checkout-flow-skeleton';
+import { Suspense } from 'react';
 
 export default async function CheckoutPage() {
   const { isAuthenticated, userId } = await auth();
@@ -11,9 +13,6 @@ export default async function CheckoutPage() {
   if (!isAuthenticated || !userId) {
     return <SignedOutCartPage />;
   }
-
-  const cart = await getCartForUser(userId);
-  const isCartEmpty = cart.items.length === 0;
 
   return (
     <main className="min-h-screen bg-surface px-4 py-12 text-on-surface sm:px-6 lg:px-8">
@@ -31,33 +30,45 @@ export default async function CheckoutPage() {
           </p>
         </header>
 
-        {isCartEmpty ? (
-          <section
-            className="mb-8 bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary"
-            role="alert"
-          >
-            Tu carrito esta vacio. Agrega productos antes de completar el
-            pedido.
-            <Link className="ml-2 underline underline-offset-4" href="/shop">
-              Ir a la tienda
-            </Link>
-          </section>
-        ) : (
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
-            <section
-              className="bg-surface-container-lowest p-6 sm:p-8"
-              aria-labelledby="shipping-form-title"
-            >
-              <h2 id="shipping-form-title" className="sr-only">
-                Informacion de envio
-              </h2>
-              <CheckoutForm isCartEmpty={isCartEmpty} />
-            </section>
-
-            <OrderSummary cart={cart} />
-          </div>
-        )}
+        <Suspense fallback={<CheckoutFlowSkeleton />}>
+          <CheckoutContent userId={userId} />
+        </Suspense>
       </div>
     </main>
+  );
+}
+
+async function CheckoutContent({ userId }: { userId: string }) {
+  const cart = await getCartForUser(userId);
+  const isCartEmpty = cart.items.length === 0;
+
+  return (
+    <>
+      {isCartEmpty ? (
+        <section
+          className="mb-8 bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary"
+          role="alert"
+        >
+          Tu carrito esta vacio. Agrega productos antes de completar el pedido.
+          <Link className="ml-2 underline underline-offset-4" href="/shop">
+            Ir a la tienda
+          </Link>
+        </section>
+      ) : (
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
+          <section
+            className="bg-surface-container-lowest p-6 sm:p-8"
+            aria-labelledby="shipping-form-title"
+          >
+            <h2 id="shipping-form-title" className="sr-only">
+              Informacion de envio
+            </h2>
+            <CheckoutForm isCartEmpty={isCartEmpty} />
+          </section>
+
+          <OrderSummary cart={cart} />
+        </div>
+      )}
+    </>
   );
 }

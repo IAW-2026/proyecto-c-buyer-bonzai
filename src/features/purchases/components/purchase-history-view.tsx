@@ -103,6 +103,74 @@ export async function PurchaseHistoryView({
   );
 }
 
+export function PurchaseHistorySkeleton() {
+  return (
+    <section
+      className="space-y-8"
+      aria-label="Purchase history loading"
+      aria-busy="true"
+    >
+      {Array.from({ length: 2 }, (_, index) => (
+        <article
+          key={index}
+          className="grid gap-5 bg-surface-container-low p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start"
+          aria-hidden="true"
+        >
+          <div className="bg-surface-container-lowest p-5 sm:p-7">
+            <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+              <div>
+                <div className="h-3 w-24 bg-surface-container" />
+                <div className="mt-3 h-12 w-56 bg-surface-container-high" />
+                <div className="mt-4 h-3 w-40 bg-surface-container" />
+              </div>
+              <div className="flex gap-2">
+                <div className="h-8 w-24 bg-secondary-container/60" />
+                <div className="h-8 w-28 bg-secondary-container/50" />
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-3">
+              {Array.from({ length: 2 }, (_, itemIndex) => (
+                <div
+                  key={itemIndex}
+                  className="grid gap-4 bg-surface-container-low p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                >
+                  <div>
+                    <div className="h-7 w-56 bg-surface-container-high" />
+                    <div className="mt-3 h-4 w-28 bg-surface-container" />
+                  </div>
+                  <div className="h-7 w-20 bg-surface-container-high" />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-col gap-4 bg-surface-container p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
+              <div>
+                <div className="h-3 w-24 bg-surface-container-high" />
+                <div className="mt-3 h-10 w-28 bg-surface-container-high" />
+              </div>
+              <div className="h-10 w-36 bg-surface-container-high" />
+            </div>
+          </div>
+
+          <aside className="bg-surface-container-lowest p-5 sm:p-6 lg:sticky lg:top-6">
+            <div className="h-4 w-36 bg-surface-container" />
+            <div className="mt-4 h-9 w-44 bg-surface-container-high" />
+            <div className="mt-7 space-y-5">
+              {Array.from({ length: 4 }, (_, detailIndex) => (
+                <div key={detailIndex}>
+                  <div className="h-3 w-24 bg-surface-container" />
+                  <div className="mt-2 h-4 w-full bg-surface-container-high" />
+                </div>
+              ))}
+            </div>
+          </aside>
+        </article>
+      ))}
+    </section>
+  );
+}
+
 function PurchasedProduct({ item }: { item: PurchaseOrderItem }) {
   return (
     <div className="grid gap-4 bg-surface-container-low p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">

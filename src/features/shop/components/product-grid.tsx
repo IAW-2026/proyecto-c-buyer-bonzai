@@ -33,3 +33,33 @@ export async function ProductGrid() {
     </section>
   );
 }
+
+export function ProductGridSkeleton() {
+  return (
+    <section
+      className="grid grid-cols-1 gap-8 md:grid-cols-12 lg:gap-12"
+      aria-label="Curated products loading"
+      aria-busy="true"
+    >
+      {Array.from({ length: 6 }, (_, index) => (
+        <article
+          key={index}
+          className="flex h-full flex-col bg-surface-container-lowest p-4 sm:p-6 md:col-span-4"
+          aria-hidden="true"
+        >
+          <div className="mb-6 aspect-4/5 animate-pulse bg-surface-container-highest" />
+          <div className="mb-3 flex gap-2">
+            <div className="h-5 w-20 rounded-full bg-secondary-container/70" />
+            <div className="h-5 w-16 rounded-full bg-secondary-container/50" />
+          </div>
+          <div className="h-8 w-3/4 bg-surface-container-high" />
+          <div className="mt-4 space-y-2">
+            <div className="h-4 w-full bg-surface-container" />
+            <div className="h-4 w-5/6 bg-surface-container" />
+          </div>
+          <div className="mt-8 h-7 w-24 bg-surface-container-high" />
+        </article>
+      ))}
+    </section>
+  );
+}
