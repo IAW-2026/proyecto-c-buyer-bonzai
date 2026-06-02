@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { getCartForUser } from '@/features/cart/data/cart';
 import { SignedOutCartPage } from '@/features/cart/components/signed-out-cart-page';
 import { CheckoutReview } from '@/features/checkout/components/checkout-review';
+import { CheckoutFlowSkeleton } from '@/features/checkout/components/checkout-flow-skeleton';
+import { Suspense } from 'react';
 
 export default async function CheckoutReviewPage() {
   const { isAuthenticated, userId } = await auth();
@@ -10,8 +12,6 @@ export default async function CheckoutReviewPage() {
   if (!isAuthenticated || !userId) {
     return <SignedOutCartPage />;
   }
-
-  const cart = await getCartForUser(userId);
 
   return (
     <main className="min-h-screen bg-surface px-4 py-12 text-on-surface sm:px-6 lg:px-8">
@@ -28,17 +28,27 @@ export default async function CheckoutReviewPage() {
           </p>
         </header>
 
-        {cart.items.length === 0 ? (
-          <section className="bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary" role="alert">
-            Tu carrito esta vacio. No hay un pedido para revisar.
-            <Link className="ml-2 underline underline-offset-4" href="/shop">
-              Ir a la tienda
-            </Link>
-          </section>
-        ) : (
-          <CheckoutReview cart={cart} />
-        )}
+        <Suspense fallback={<CheckoutFlowSkeleton variant="review" />}>
+          <CheckoutReviewContent userId={userId} />
+        </Suspense>
       </div>
     </main>
   );
+}
+
+async function CheckoutReviewContent({ userId }: { userId: string }) {
+  const cart = await getCartForUser(userId);
+
+  if (cart.items.length === 0) {
+    return (
+      <section className="bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary" role="alert">
+        Tu carrito esta vacio. No hay un pedido para revisar.
+        <Link className="ml-2 underline underline-offset-4" href="/shop">
+          Ir a la tienda
+        </Link>
+      </section>
+    );
+  }
+
+  return <CheckoutReview cart={cart} />;
 }

@@ -10,12 +10,7 @@ import { CategoryMenu } from './category-menu';
 import { SearchBar } from './search-bar';
 import PurchasesNavLink from './purchases-nav-link';
 
-export async function SiteNav() {
-  const [categories, searchItems] = await Promise.all([
-    getProductCategories(),
-    getProductSearchItems(),
-  ]);
-
+export function SiteNav() {
   return (
     <header className="relative z-30 w-full bg-surface/90 backdrop-blur-[20px]">
       <nav className="mx-auto flex min-h-14 w-full max-w-360 items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -32,7 +27,7 @@ export async function SiteNav() {
         </div>
 
         <Suspense fallback={<SearchBarFallback className="mx-auto max-w-xl" />}>
-          <SearchBar className="mx-auto max-w-xl" items={searchItems} />
+          <SearchBarSlot />
         </Suspense>
 
         <AccountControls className="flex shrink-0" />
@@ -42,7 +37,9 @@ export async function SiteNav() {
         className="mx-auto flex w-full max-w-360 flex-wrap justify-center items-center gap-2 px-4 pb-3 sm:px-6 lg:px-8"
         aria-label="Shop sections"
       >
-        <CategoryMenu categories={categories} />
+        <Suspense fallback={<CategoryMenuFallback />}>
+          <CategoryMenuSlot />
+        </Suspense>
 
         <Link
           href="/shop?q=Accessories"
@@ -69,11 +66,32 @@ export async function SiteNav() {
   );
 }
 
+async function SearchBarSlot() {
+  const searchItems = await getProductSearchItems();
+
+  return <SearchBar className="mx-auto max-w-xl" items={searchItems} />;
+}
+
+async function CategoryMenuSlot() {
+  const categories = await getProductCategories();
+
+  return <CategoryMenu categories={categories} />;
+}
+
 function SearchBarFallback({ className = '' }: { className?: string }) {
   return (
     <div className={`min-w-0 flex-1 ${className}`} aria-hidden="true">
       <div className="h-10 rounded-lg bg-surface-container" />
     </div>
+  );
+}
+
+function CategoryMenuFallback() {
+  return (
+    <div
+      className="h-9 w-32 shrink-0 rounded-full bg-surface-container-low"
+      aria-hidden="true"
+    />
   );
 }
 

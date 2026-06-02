@@ -1,6 +1,9 @@
 import { auth } from '@clerk/nextjs/server';
 import type { Metadata } from 'next';
-import { PurchaseHistoryView } from '@/features/purchases/components/purchase-history-view';
+import {
+  PurchaseHistorySkeleton,
+  PurchaseHistoryView,
+} from '@/features/purchases/components/purchase-history-view';
 import { SignedOutPurchasesPage } from '@/features/purchases/components/signed-out-purchases-page';
 import { Suspense } from 'react';
 
@@ -35,7 +38,7 @@ export default async function PurchasesPage() {
           </p>
         </header>
 
-        <Suspense>
+        <Suspense fallback={<PurchaseHistorySkeleton />}>
           <PurchaseHistoryView userId={userId} />
         </Suspense>
       </div>
