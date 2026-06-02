@@ -13,8 +13,8 @@ import PurchasesNavLink from './purchases-nav-link';
 export function SiteNav() {
   return (
     <header className="relative z-30 w-full bg-surface/90 backdrop-blur-[20px]">
-      <nav className="mx-auto flex min-h-14 w-full max-w-360 items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex shrink-0 items-center justify-between gap-3">
+      <nav className="mx-auto flex min-h-14 w-full max-w-360 flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex shrink-0 items-center gap-3">
           <Link
             href="/"
             className="group flex cursor-pointer items-center gap-2"
@@ -26,11 +26,13 @@ export function SiteNav() {
           </Link>
         </div>
 
-        <Suspense fallback={<SearchBarFallback className="mx-auto max-w-xl" />}>
-          <SearchBarSlot />
-        </Suspense>
+        <div className="order-last basis-full sm:order-none sm:basis-auto sm:flex-1">
+          <Suspense fallback={<SearchBarFallback className="mx-auto max-w-xl" />}>
+            <SearchBarSlot />
+          </Suspense>
+        </div>
 
-        <AccountControls className="flex shrink-0" />
+        <AccountControls className="ml-auto flex shrink-0" />
       </nav>
 
       <nav
