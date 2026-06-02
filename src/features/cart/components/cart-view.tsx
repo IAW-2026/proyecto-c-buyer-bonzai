@@ -120,7 +120,7 @@ export function CartView({ cart }: CartViewProps) {
           href="/checkout"
           className="mt-8 flex w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-8 py-4 text-center font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Completar pedido
+          Complete order
         </Link>
       </aside>
     </div>

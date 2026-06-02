@@ -64,7 +64,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
 
     if (isCartEmpty) {
       setFormError(
-        'Tu carrito esta vacio. Agrega al menos una planta antes de completar el pedido.',
+        'Your cart is empty. Add at least one plant before completing your order.',
       );
       return;
     }
@@ -84,7 +84,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
 
     if (!result.success) {
       setFieldErrors(result.error.flatten().fieldErrors);
-      setFormError('Revisa los campos marcados para continuar.');
+      setFormError('Review the marked fields to continue.');
       const firstInvalidField = findFirstInvalidField(
         result.error.flatten().fieldErrors,
       );
@@ -118,7 +118,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
 
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
-          label="Nombre"
+          label="First name"
           name="firstName"
           value={shippingDetails.firstName}
           error={fieldErrors.firstName?.[0]}
@@ -126,7 +126,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
           onChange={updateField}
         />
         <TextField
-          label="Apellido"
+          label="Last name"
           name="lastName"
           value={shippingDetails.lastName}
           error={fieldErrors.lastName?.[0]}
@@ -135,7 +135,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
         />
         <TextField
           className="sm:col-span-2"
-          label="Direccion de envio"
+          label="Shipping address"
           name="address"
           value={shippingDetails.address}
           error={fieldErrors.address?.[0]}
@@ -143,7 +143,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
           onChange={updateField}
         />
         <TextField
-          label="Departamento / unidad"
+          label="Apartment / unit"
           name="apartment"
           value={shippingDetails.apartment ?? ''}
           error={fieldErrors.apartment?.[0]}
@@ -152,7 +152,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
           onChange={updateField}
         />
         <TextField
-          label="Piso"
+          label="Floor"
           name="floor"
           value={shippingDetails.floor ?? ''}
           error={fieldErrors.floor?.[0]}
@@ -160,7 +160,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
           onChange={updateField}
         />
         <TextField
-          label="Ciudad"
+          label="City"
           name="city"
           value={shippingDetails.city}
           error={fieldErrors.city?.[0]}
@@ -168,7 +168,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
           onChange={updateField}
         />
         <TextField
-          label="Codigo postal"
+          label="Postal code"
           name="postalCode"
           value={shippingDetails.postalCode}
           error={fieldErrors.postalCode?.[0]}
@@ -176,7 +176,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
           onChange={updateField}
         />
         <TextField
-          label="Provincia"
+          label="Province"
           name="province"
           value={shippingDetails.province}
           error={fieldErrors.province?.[0]}
@@ -184,7 +184,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
           onChange={updateField}
         />
         <TextField
-          label="Pais / region"
+          label="Country / region"
           name="country"
           value={shippingDetails.country}
           error={fieldErrors.country?.[0]}
@@ -198,7 +198,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
         type="submit"
         className="inline-flex w-full items-center justify-center rounded-sm bg-primary px-8 py-4 text-center font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
       >
-        Completar pedido
+        Complete order
       </button>
     </form>
   );
@@ -236,9 +236,9 @@ function TextField({
         className="mb-2 flex items-center justify-between gap-3 font-label text-xs uppercase tracking-[0.16em] text-secondary"
       >
         <span>{label}</span>
-        {optional ? (
-          <span className="normal-case tracking-normal">Opcional</span>
-        ) : null}
+          {optional ? (
+            <span className="normal-case tracking-normal">Optional</span>
+          ) : null}
       </label>
       <input
         id={name}

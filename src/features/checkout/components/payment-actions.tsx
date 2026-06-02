@@ -21,7 +21,7 @@ export function PaymentActions() {
         router.push('/?payment=success');
       } catch {
         setError(
-          'No pudimos confirmar el pago porque no se pudo vaciar el carrito. Intentalo nuevamente.',
+          'We couldn\'t confirm the payment because the cart couldn\'t be cleared. Try again.',
         );
       }
     });
@@ -45,7 +45,7 @@ export function PaymentActions() {
           disabled={isPending}
           className="inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? 'Confirmando...' : 'Simular éxito'}
+          {isPending ? 'Confirming...' : 'Simulate success'}
         </button>
         <button
           type="button"
@@ -53,7 +53,7 @@ export function PaymentActions() {
           disabled={isPending}
           className="inline-flex min-h-12 items-center justify-center rounded-sm bg-surface-container-high px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-primary transition hover:bg-surface-container-highest focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Simular error
+          Simulate error
         </button>
       </div>
     </div>

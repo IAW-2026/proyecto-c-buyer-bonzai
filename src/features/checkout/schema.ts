@@ -4,10 +4,10 @@ const requiredString = (label: string) =>
   z
     .string({
       error: (issue) =>
-        issue.input === undefined ? `${label} es obligatorio` : 'Valor invalido',
+        issue.input === undefined ? `${label} is required` : 'Invalid value',
     })
     .trim()
-    .min(1, { error: `${label} es obligatorio` });
+    .min(1, { error: `${label} is required` });
 
 const optionalString = z.preprocess(
   (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
@@ -15,16 +15,16 @@ const optionalString = z.preprocess(
 );
 
 export const checkoutShippingSchema = z.object({
-  firstName: requiredString('El nombre'),
-  lastName: requiredString('El apellido'),
-  address: requiredString('La direccion'),
+  firstName: requiredString('First name'),
+  lastName: requiredString('Last name'),
+  address: requiredString('The address'),
   apartment: optionalString,
   floor: optionalString,
-  city: requiredString('La ciudad'),
-  postalCode: requiredString('El codigo postal'),
-  province: requiredString('La provincia'),
+  city: requiredString('The city'),
+  postalCode: requiredString('The postal code'),
+  province: requiredString('The province'),
   country: z.literal('Argentina', {
-    error: 'El pais o region debe ser Argentina',
+    error: 'The country or region must be Argentina',
   }),
 });
 

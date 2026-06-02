@@ -6,7 +6,7 @@ type OrderSummaryProps = {
   title?: string;
 };
 
-export function OrderSummary({ cart, title = 'Resumen del pedido' }: OrderSummaryProps) {
+export function OrderSummary({ cart, title = 'Order summary' }: OrderSummaryProps) {
   return (
     <aside className="bg-surface-container-lowest p-6 lg:sticky lg:top-6">
       <p className="mb-5 font-label text-xs uppercase tracking-[0.18em] text-secondary">
@@ -14,7 +14,7 @@ export function OrderSummary({ cart, title = 'Resumen del pedido' }: OrderSummar
       </p>
 
       <div className="space-y-5">
-        <ul className="space-y-4" aria-label="Productos del pedido">
+        <ul className="space-y-4" aria-label="Order products">
           {cart.items.map((item) => (
             <li key={item.id} className="flex items-start justify-between gap-4">
               <div>
@@ -32,14 +32,14 @@ export function OrderSummary({ cart, title = 'Resumen del pedido' }: OrderSummar
 
         <dl className="space-y-4 pt-4 text-sm text-secondary">
           <div className="flex items-center justify-between gap-4">
-            <dt>Productos ({cart.totalQuantity})</dt>
+            <dt>Products ({cart.totalQuantity})</dt>
             <dd className="font-medium text-primary">
               {formatCurrency(cart.productsTotal)}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <dt>Envio</dt>
-            <dd className="font-medium text-primary">Gratis</dd>
+            <dt>Shipping</dt>
+            <dd className="font-medium text-primary">Free</dd>
           </div>
           <div className="flex items-center justify-between gap-4 pt-5 font-headline text-3xl text-primary">
             <dt>Total</dt>

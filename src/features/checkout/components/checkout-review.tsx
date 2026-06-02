@@ -43,19 +43,19 @@ export function CheckoutReview({ cart }: CheckoutReviewProps) {
     return (
       <section className="bg-surface-container-lowest p-8 sm:p-10" role="status">
         <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
-          Faltan datos
+          Missing data
         </p>
         <h2 className="mt-4 font-headline text-4xl leading-none tracking-[-0.04em] text-primary">
-          Necesitamos tu informacion de envio.
+          We need your shipping information.
         </h2>
         <p className="mt-5 max-w-xl text-sm leading-7 text-secondary">
-          Volve al checkout y completa la direccion antes de revisar el pedido.
+          Go back to checkout and complete the address before reviewing your order.
         </p>
         <Link
           href="/checkout"
           className="mt-8 inline-flex rounded-sm bg-primary px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Completar envio
+          Complete shipping
         </Link>
       </section>
     );
@@ -64,7 +64,7 @@ export function CheckoutReview({ cart }: CheckoutReviewProps) {
   if (!shippingDetails) {
     return (
       <section className="bg-surface-container-lowest p-8 text-sm text-secondary" role="status">
-        Cargando detalles del pedido...
+        Loading order details...
       </section>
     );
   }
@@ -73,24 +73,24 @@ export function CheckoutReview({ cart }: CheckoutReviewProps) {
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
       <section className="bg-surface-container-lowest p-6 sm:p-8" aria-labelledby="shipping-review-title">
         <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
-          Direccion de entrega
+          Delivery address
         </p>
         <h2
           id="shipping-review-title"
           className="mt-4 font-headline text-4xl leading-none tracking-[-0.04em] text-primary"
         >
-          Revisa los datos antes de pagar.
+          Review the information before paying.
         </h2>
 
         <dl className="mt-8 grid gap-5 sm:grid-cols-2">
-          <Detail label="Nombre" value={`${shippingDetails.firstName} ${shippingDetails.lastName}`} />
-          <Detail label="Direccion" value={shippingDetails.address} />
-          <Detail label="Departamento / unidad" value={shippingDetails.apartment || 'No indicado'} />
-          <Detail label="Piso" value={shippingDetails.floor || 'No indicado'} />
-          <Detail label="Ciudad" value={shippingDetails.city} />
-          <Detail label="Codigo postal" value={shippingDetails.postalCode} />
-          <Detail label="Provincia" value={shippingDetails.province} />
-          <Detail label="Pais / region" value={shippingDetails.country} />
+          <Detail label="Name" value={`${shippingDetails.firstName} ${shippingDetails.lastName}`} />
+          <Detail label="Address" value={shippingDetails.address} />
+          <Detail label="Apartment / unit" value={shippingDetails.apartment || 'Not indicated'} />
+          <Detail label="Floor" value={shippingDetails.floor || 'Not indicated'} />
+          <Detail label="City" value={shippingDetails.city} />
+          <Detail label="Postal code" value={shippingDetails.postalCode} />
+          <Detail label="Province" value={shippingDetails.province} />
+          <Detail label="Country / region" value={shippingDetails.country} />
         </dl>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
@@ -98,13 +98,13 @@ export function CheckoutReview({ cart }: CheckoutReviewProps) {
             href="/checkout/payment"
             className="inline-flex items-center justify-center rounded-sm bg-primary px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            Ir a pagar
+            Go to payment
           </Link>
           <Link
             href="/checkout"
             className="inline-flex items-center justify-center rounded-sm bg-surface-container-high px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-primary transition hover:bg-surface-container-highest focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            Editar envio
+            Edit shipping
           </Link>
         </div>
       </section>

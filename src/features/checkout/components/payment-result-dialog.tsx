@@ -7,16 +7,16 @@ type PaymentResult = 'success' | 'error';
 
 const paymentCopy: Record<PaymentResult, { title: string; description: string; action: string }> = {
   success: {
-    title: 'Pedido confirmado.',
+    title: 'Order confirmed.',
     description:
-      'La transaccion de prueba finalizo correctamente. Tu Bonzai queda listo para preparacion.',
-    action: 'Cerrar',
+      'The test transaction completed successfully. Your Bonzai is ready for preparation.',
+    action: 'Close',
   },
   error: {
-    title: 'No pudimos procesar el pago.',
+    title: 'We couldn\'t process the payment.',
     description:
-      'La pasarela simulada devolvio un error. Podes volver al checkout para intentar nuevamente.',
-    action: 'Entendido',
+      'The simulated gateway returned an error. You can go back to checkout to try again.',
+    action: 'Got it',
   },
 };
 
@@ -65,7 +65,7 @@ export function PaymentResultDialog() {
     >
       <div className="p-8 sm:p-10">
         <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
-          Pago simulado
+          Simulated payment
         </p>
         <h2
           id="payment-result-title"
