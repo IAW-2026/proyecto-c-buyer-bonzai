@@ -23,7 +23,7 @@ https://proyecto-c-buyer-bonzai.vercel.app
 
 ## Instrucciones para utilizar o evaluar la aplicación
 
-No aplica.
+Cuando se realiza una búsqueda o se navega a traves del header de navegación pasamos a la pagina /shop, asegurarse de estar en la categoría "All" sin query de búsqueda para poder probar la paginación. 
 
 ## Descripción del proyecto
 
