@@ -1,6 +1,7 @@
+# Bonzai — Buyer App
+
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/8-wwxMvS)
 
-# buyer
 
 Aplicación **Buyer** del [Proyecto IAW 2026](https://iaw-2026.github.io/proyecto/) — comisión Bonzai.
 
@@ -9,8 +10,6 @@ Esta app corresponde al rol del comprador en los proyectos de tipo **B (Delivery
 ---
 
 Enunciado completo: <https://iaw-2026.github.io/proyecto/>
-
-# Bonzai — Buyer App
 
 ## Link al deploy de producción
 
@@ -24,7 +23,7 @@ https://proyecto-c-buyer-bonzai.vercel.app
 
 ## Instrucciones para utilizar o evaluar la aplicación
 
-No aplica.
+Cuando se realiza una búsqueda o se navega a traves del header de navegación pasamos a la pagina /shop, asegurarse de estar en la categoría "All" sin query de búsqueda para poder probar la paginación. 
 
 ## Descripción del proyecto
 
@@ -38,7 +37,7 @@ Actualmente la aplicación funciona con datos estáticos y simula flujos de comp
 
 ## Notas para la corrección
 
-- No se implementó un panel de administración porque se identificó que no era necesario para la aplicación de comprador.
+- No se implementó un panel de administración ni se exponen endpoints porque se identificó que no era necesario para la aplicación de comprador.
 - Los endpoints de productos no están conectados; el pago está simulado al final de la pasarela.
 - Los botones de "solicitar reembolso" no tienen lógica integrada aún.
 - Los productos y el historial de compras son datos estáticos.
