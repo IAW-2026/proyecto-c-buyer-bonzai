@@ -6,7 +6,6 @@ import {
   addCartItemWithState,
   type AddCartItemState,
 } from '@/features/cart/actions/cart';
-import { useCart } from './cart-provider';
 import { Calligraph } from 'calligraph';
 
 const initialAddCartItemState: AddCartItemState = {
@@ -23,7 +22,6 @@ export function AddToCartButton({
   productId,
   className,
 }: AddToCartButtonProps) {
-  const { dispatchCart } = useCart();
   const [state, formAction, isPending] = useActionState(
     addCartItemWithState,
     initialAddCartItemState,
@@ -36,7 +34,6 @@ export function AddToCartButton({
       return;
     }
 
-    dispatchCart({ type: 'increment' });
     const showSuccessTimeoutId = window.setTimeout(() => {
       setSuccessVisible(true);
     }, 0);
@@ -49,7 +46,7 @@ export function AddToCartButton({
       window.clearTimeout(showSuccessTimeoutId);
       window.clearTimeout(hideSuccessTimeoutId);
     };
-  }, [dispatchCart, state.status, state.submissionId]);
+  }, [state.status, state.submissionId]);
 
   return (
     <>
