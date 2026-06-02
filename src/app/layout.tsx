@@ -2,11 +2,15 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import type { Metadata } from 'next';
 import { Manrope, Newsreader } from 'next/font/google';
-import { CartProvider } from '@/features/cart/components/cart-provider';
+import {
+  CartProvider,
+  CartQuantityHydrator,
+} from '@/features/cart/components/cart-provider';
 import { getCartForUser } from '@/features/cart/data/cart';
 import { ShopAssistantButton } from '@/features/shell/components/shop-assistant-button';
 import { SiteFooter } from '@/features/shell/components/site-footer';
 import { SiteNav } from '@/features/shell/components/site-nav';
+import { Suspense } from 'react';
 import './globals.css';
 
 const newsreader = Newsreader({
@@ -29,13 +33,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const initialCartQuantity = await getInitialCartQuantity();
-
   return (
     <html
       lang="en"
@@ -43,7 +45,10 @@ export default async function RootLayout({
     >
       <body className="min-h-full bg-surface text-on-surface font-body">
         <ClerkProvider>
-          <CartProvider initialQuantity={initialCartQuantity}>
+          <CartProvider initialQuantity={0}>
+            <Suspense fallback={null}>
+              <InitialCartQuantity />
+            </Suspense>
             <SiteNav />
             <div className="min-h-screen">{children}</div>
           </CartProvider>
@@ -53,6 +58,12 @@ export default async function RootLayout({
       </body>
     </html>
   );
+}
+
+async function InitialCartQuantity() {
+  const initialCartQuantity = await getInitialCartQuantity();
+
+  return <CartQuantityHydrator quantity={initialCartQuantity} />;
 }
 
 async function getInitialCartQuantity() {

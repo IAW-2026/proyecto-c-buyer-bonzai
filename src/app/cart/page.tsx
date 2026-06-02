@@ -2,6 +2,8 @@ import { auth } from '@clerk/nextjs/server';
 import { CartView } from '@/features/cart/components/cart-view';
 import { getCartForUser } from '@/features/cart/data/cart';
 import { SignedOutCartPage } from '@/features/cart/components/signed-out-cart-page';
+import { Suspense } from 'react';
+import { CartViewSkeleton } from '@/features/cart/components/cart-view-skeleton';
 
 export default async function CartPage() {
   const { isAuthenticated, userId } = await auth();
@@ -9,8 +11,6 @@ export default async function CartPage() {
   if (!isAuthenticated || !userId) {
     return <SignedOutCartPage />;
   }
-
-  const cart = await getCartForUser(userId);
 
   return (
     <main className="min-h-screen bg-surface px-4 py-12 text-on-surface sm:px-6 lg:px-8">
@@ -23,8 +23,16 @@ export default async function CartPage() {
             Your cart
           </h1>
         </header>
-        <CartView cart={cart} />
+        <Suspense fallback={<CartViewSkeleton />}>
+          <CartContent userId={userId} />
+        </Suspense>
       </div>
     </main>
   );
+}
+
+async function CartContent({ userId }: { userId: string }) {
+  const cart = await getCartForUser(userId);
+
+  return <CartView cart={cart} />;
 }

@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { PaymentResultDialog } from '@/features/checkout/components/payment-result-dialog';
-import { ProductGrid } from '@/features/shop/components/product-grid';
+import {
+  ProductGrid,
+  ProductGridSkeleton,
+} from '@/features/shop/components/product-grid';
 
 export default async function Home() {
   return (
@@ -11,7 +14,9 @@ export default async function Home() {
       </Suspense>
 
       <div className="mx-auto max-w-360">
-        <ProductGrid />
+        <Suspense fallback={<ProductGridSkeleton />}>
+          <ProductGrid />
+        </Suspense>
 
         <div className="mt-24 text-center">
           <Link

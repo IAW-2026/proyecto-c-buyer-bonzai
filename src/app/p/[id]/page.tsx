@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
 import { ProductCard, ProductTags } from '@/features/shop/components/product-card';
 import {
@@ -22,10 +23,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const [aiDescription, relatedProducts] = await Promise.all([
-    getProductAiDescription(product),
-    getRelatedProducts(product),
-  ]);
   const productTags = Array.from(new Set([product.category, ...product.tags]));
 
   return (
@@ -100,61 +97,149 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </section>
       </article>
 
-      <section className="mx-auto mt-24 max-w-360 bg-surface-container-low px-5 py-12 sm:px-8 lg:px-12 lg:py-14">
-        <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
-          <div className="max-w-md">
-            <div className="mb-5 inline-flex items-center gap-3 bg-surface-container-lowest px-4 py-3 text-primary">
-              <AiGeneratedIcon />
-              <span className="font-label text-[10px] uppercase tracking-[0.22em] text-secondary">
-                AI-generated read
-              </span>
-            </div>
-            <p className="mb-3 font-label text-xs uppercase tracking-[0.22em] text-secondary">
-              The Bonzai read
-            </p>
-            <h2 className="font-headline text-4xl leading-tight text-primary sm:text-5xl">
-              A living note, composed for this piece.
-            </h2>
-          </div>
-          <p className="max-w-3xl bg-surface px-6 py-7 font-body text-base leading-8 text-secondary sm:px-8 sm:py-9 sm:text-lg sm:leading-9">
-            {aiDescription}
-          </p>
-        </div>
-      </section>
+      <Suspense fallback={<AiDescriptionSkeleton />}>
+        <AiDescriptionSection product={product} />
+      </Suspense>
 
-      {relatedProducts.length > 0 ? (
-        <section
-          className="mx-auto mt-20 max-w-360"
-          aria-labelledby="related-products-heading"
-        >
-          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="mb-3 font-label text-xs uppercase tracking-[0.22em] text-secondary">
-                Related pieces
-              </p>
-              <h2
-                id="related-products-heading"
-                className="font-headline text-4xl leading-tight text-primary sm:text-5xl"
-              >
-                Continue the collection
-              </h2>
-            </div>
-            <Link
-              href="/shop"
-              className="inline-flex cursor-pointer font-label text-xs uppercase tracking-[0.18em] text-secondary transition hover:text-primary focus-visible:outline focus-visible:outline-offset-4 focus-visible:outline-primary"
-            >
-              View all products
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12">
-            {relatedProducts.map((relatedProduct) => (
-              <ProductCard key={relatedProduct.id} product={relatedProduct} />
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <Suspense fallback={<RelatedProductsSkeleton />}>
+        <RelatedProductsSection product={product} />
+      </Suspense>
     </main>
+  );
+}
+
+async function AiDescriptionSection({
+  product,
+}: {
+  product: NonNullable<Awaited<ReturnType<typeof getProductById>>>;
+}) {
+  const aiDescription = await getProductAiDescription(product);
+
+  return (
+    <section className="mx-auto mt-24 max-w-360 bg-surface-container-low px-5 py-12 sm:px-8 lg:px-12 lg:py-14">
+      <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
+        <div className="max-w-md">
+          <div className="mb-5 inline-flex items-center gap-3 bg-surface-container-lowest px-4 py-3 text-primary">
+            <AiGeneratedIcon />
+            <span className="font-label text-[10px] uppercase tracking-[0.22em] text-secondary">
+              AI-generated read
+            </span>
+          </div>
+          <p className="mb-3 font-label text-xs uppercase tracking-[0.22em] text-secondary">
+            The Bonzai read
+          </p>
+          <h2 className="font-headline text-4xl leading-tight text-primary sm:text-5xl">
+            A living note, composed for this piece.
+          </h2>
+        </div>
+        <p className="max-w-3xl bg-surface px-6 py-7 font-body text-base leading-8 text-secondary sm:px-8 sm:py-9 sm:text-lg sm:leading-9">
+          {aiDescription}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function AiDescriptionSkeleton() {
+  return (
+    <section
+      className="mx-auto mt-24 max-w-360 bg-surface-container-low px-5 py-12 sm:px-8 lg:px-12 lg:py-14"
+      aria-label="Product note loading"
+      aria-busy="true"
+    >
+      <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
+        <div className="max-w-md" aria-hidden="true">
+          <div className="mb-5 h-15 w-52 bg-surface-container-lowest" />
+          <div className="mb-3 h-4 w-32 bg-surface-container" />
+          <div className="h-24 w-full max-w-sm bg-surface-container-high" />
+        </div>
+        <div className="max-w-3xl bg-surface px-6 py-7 sm:px-8 sm:py-9" aria-hidden="true">
+          <div className="space-y-4">
+            <div className="h-5 w-full bg-surface-container" />
+            <div className="h-5 w-11/12 bg-surface-container" />
+            <div className="h-5 w-10/12 bg-surface-container" />
+            <div className="h-5 w-3/4 bg-surface-container" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function RelatedProductsSection({
+  product,
+}: {
+  product: NonNullable<Awaited<ReturnType<typeof getProductById>>>;
+}) {
+  const relatedProducts = await getRelatedProducts(product);
+
+  if (relatedProducts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section
+      className="mx-auto mt-20 max-w-360"
+      aria-labelledby="related-products-heading"
+    >
+      <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-3 font-label text-xs uppercase tracking-[0.22em] text-secondary">
+            Related pieces
+          </p>
+          <h2
+            id="related-products-heading"
+            className="font-headline text-4xl leading-tight text-primary sm:text-5xl"
+          >
+            Continue the collection
+          </h2>
+        </div>
+        <Link
+          href="/shop"
+          className="inline-flex cursor-pointer font-label text-xs uppercase tracking-[0.18em] text-secondary transition hover:text-primary focus-visible:outline focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
+          View all products
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12">
+        {relatedProducts.map((relatedProduct) => (
+          <ProductCard key={relatedProduct.id} product={relatedProduct} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RelatedProductsSkeleton() {
+  return (
+    <section
+      className="mx-auto mt-20 max-w-360"
+      aria-label="Related products loading"
+      aria-busy="true"
+    >
+      <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" aria-hidden="true">
+        <div>
+          <div className="mb-3 h-4 w-32 bg-surface-container" />
+          <div className="h-12 w-72 max-w-full bg-surface-container-high" />
+        </div>
+        <div className="h-4 w-32 bg-surface-container" />
+      </div>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12" aria-hidden="true">
+        {Array.from({ length: 3 }, (_, index) => (
+          <article key={index} className="bg-surface-container-lowest p-4 sm:p-6">
+            <div className="mb-6 aspect-4/5 animate-pulse bg-surface-container-highest" />
+            <div className="mb-3 h-5 w-24 rounded-full bg-secondary-container/60" />
+            <div className="h-8 w-3/4 bg-surface-container-high" />
+            <div className="mt-4 space-y-2">
+              <div className="h-4 w-full bg-surface-container" />
+              <div className="h-4 w-5/6 bg-surface-container" />
+            </div>
+            <div className="mt-8 h-7 w-24 bg-surface-container-high" />
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
