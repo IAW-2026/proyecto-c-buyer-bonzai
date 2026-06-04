@@ -26,7 +26,7 @@ export function SiteNav() {
           </Link>
         </div>
 
-        <div className="order-last basis-full sm:order-none sm:basis-auto sm:flex-1">
+        <div className="order-last basis-full sm:order-0 sm:basis-auto sm:flex-1">
           <Suspense fallback={<SearchBarFallback className="mx-auto max-w-xl" />}>
             <SearchBarSlot />
           </Suspense>

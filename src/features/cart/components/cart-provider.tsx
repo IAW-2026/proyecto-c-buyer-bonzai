@@ -27,10 +27,10 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({
   children,
-  initialQuantity,
+  initialQuantity = 0,
 }: {
   children: ReactNode;
-  initialQuantity: number;
+  initialQuantity?: number;
 }) {
   const quantity = sanitizeQuantity(initialQuantity);
   const [state, dispatchCart] = useReducer(cartReducer, {

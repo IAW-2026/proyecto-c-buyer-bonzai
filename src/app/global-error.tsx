@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
 
 type GlobalErrorPageProps = {
   error: Error & { digest?: string };
@@ -12,10 +11,6 @@ export default function GlobalErrorPage({
   error,
   unstable_retry,
 }: GlobalErrorPageProps) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
   return (
     <html lang="en" className="h-full antialiased">
       <head>

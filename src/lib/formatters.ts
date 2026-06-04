@@ -13,6 +13,6 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
 });
 
-export function formatDate(value: string) {
+export const formatDate = (value: string) => {
   return dateFormatter.format(new Date(value));
 }

@@ -7,7 +7,6 @@ import {
   CartQuantityHydrator,
 } from '@/features/cart/components/cart-provider';
 import { getCartForUser } from '@/features/cart/data/cart';
-import { ShopAssistantButton } from '@/features/shell/components/shop-assistant-button';
 import { SiteFooter } from '@/features/shell/components/site-footer';
 import { SiteNav } from '@/features/shell/components/site-nav';
 import { Suspense } from 'react';
@@ -45,7 +44,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-surface text-on-surface font-body">
         <ClerkProvider>
-          <CartProvider initialQuantity={0}>
+          <CartProvider>
             <Suspense fallback={null}>
               <InitialCartQuantity />
             </Suspense>
@@ -53,7 +52,6 @@ export default function RootLayout({
             <div className="min-h-screen">{children}</div>
           </CartProvider>
           <SiteFooter />
-          <ShopAssistantButton />
         </ClerkProvider>
       </body>
     </html>
