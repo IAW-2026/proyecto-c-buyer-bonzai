@@ -19,14 +19,14 @@ export default async function CheckoutPaymentPage() {
       <div className="mx-auto max-w-360">
         <header className="mb-10 max-w-3xl">
           <p className="mb-4 font-label text-xs uppercase tracking-[0.18em] text-secondary">
-            Pasarela de pago
+            Confirmacion del pedido
           </p>
           <h1 className="font-headline text-5xl leading-none tracking-[-0.04em] text-primary md:text-6xl">
-            Confirmacion del pago
+            Reserva y orden
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-secondary md:text-base">
-            Esta pantalla representa la pasarela real. Elegi el resultado para
-            simular la respuesta del proveedor de pagos.
+            Al confirmar, Bonzai reserva el stock con Seller y crea tus ordenes
+            en estado pendiente.
           </p>
         </header>
 
@@ -56,17 +56,17 @@ async function CheckoutPaymentContent({ userId }: { userId: string }) {
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
       <section className="bg-surface-container-lowest p-6 sm:p-8" aria-labelledby="payment-simulation-title">
         <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
-          Entorno de prueba
+          Ultimo paso
         </p>
         <h2
           id="payment-simulation-title"
           className="mt-4 font-headline text-4xl leading-none tracking-[-0.04em] text-primary"
         >
-          Simula la respuesta de la pasarela.
+          Confirma tu pedido pendiente.
         </h2>
         <p className="mt-5 max-w-xl text-sm leading-7 text-secondary">
-          En una integracion real, Bonzai redirigiria aca al proveedor de pago y
-          volveria con el estado final de la transaccion.
+          Vamos a validar stock, reservar los productos y crear una orden por
+          cada seller. El pago queda fuera de este flujo por ahora.
         </p>
         <PaymentActions />
         <Link

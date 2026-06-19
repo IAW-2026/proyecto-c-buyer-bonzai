@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useOptimistic, useTransition } from 'react';
+import { useOptimistic, useTransition } from 'react';
 import {
   decrementCartItemById,
   incrementCartItemById,
@@ -28,10 +28,6 @@ export function CartView({ cart }: CartViewProps) {
     cart,
     applyOptimisticCartAction,
   );
-
-  useEffect(() => {
-    dispatchCart({ type: 'set', quantity: cart.totalQuantity });
-  }, [cart.totalQuantity, dispatchCart]);
 
   function incrementItem(productId: string) {
     startTransition(async () => {
@@ -218,7 +214,8 @@ function QuantityControls({
         <button
           type="button"
           onClick={() => onIncrement(item.productId)}
-          className="flex size-10 cursor-pointer items-center justify-center text-primary transition hover:bg-surface-container-high focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+          disabled={item.quantity >= item.product.stock}
+          className="flex size-10 cursor-pointer items-center justify-center text-primary transition hover:bg-surface-container-high focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:text-outline"
           aria-label={`Increase ${item.product.name} quantity`}
         >
           <PlusIcon className="size-4" />

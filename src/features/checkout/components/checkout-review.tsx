@@ -90,6 +90,7 @@ export function CheckoutReview({ cart }: CheckoutReviewProps) {
           <Detail label="Ciudad" value={shippingDetails.city} />
           <Detail label="Codigo postal" value={shippingDetails.postalCode} />
           <Detail label="Provincia" value={shippingDetails.province} />
+          <Detail label="Telefono" value={shippingDetails.phone} />
           <Detail label="Pais / region" value={shippingDetails.country} />
         </dl>
 
@@ -98,7 +99,7 @@ export function CheckoutReview({ cart }: CheckoutReviewProps) {
             href="/checkout/payment"
             className="inline-flex items-center justify-center rounded-sm bg-primary px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            Ir a pagar
+            Confirmar pedido
           </Link>
           <Link
             href="/checkout"

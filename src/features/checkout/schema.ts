@@ -23,6 +23,7 @@ export const checkoutShippingSchema = z.object({
   city: requiredString('La ciudad'),
   postalCode: requiredString('El codigo postal'),
   province: requiredString('La provincia'),
+  phone: requiredString('El telefono'),
   country: z.literal('Argentina', {
     error: 'El pais o region debe ser Argentina',
   }),
@@ -30,4 +31,4 @@ export const checkoutShippingSchema = z.object({
 
 export type CheckoutShippingDetails = z.infer<typeof checkoutShippingSchema>;
 
-export const CHECKOUT_SHIPPING_STORAGE_KEY = 'bonzai.checkout.shipping.v1';
+export const CHECKOUT_SHIPPING_STORAGE_KEY = 'bonzai.checkout.shipping.v2';

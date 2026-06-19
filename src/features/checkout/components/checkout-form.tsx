@@ -23,6 +23,7 @@ const emptyShippingDetails: CheckoutShippingDetails = {
   city: '',
   postalCode: '',
   province: '',
+  phone: '',
   country: 'Argentina',
 };
 
@@ -79,6 +80,7 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
       city: formData.get('city'),
       postalCode: formData.get('postalCode'),
       province: formData.get('province'),
+      phone: formData.get('phone'),
       country: formData.get('country'),
     });
 
@@ -184,6 +186,14 @@ export function CheckoutForm({ isCartEmpty }: CheckoutFormProps) {
           onChange={updateField}
         />
         <TextField
+          label="Telefono"
+          name="phone"
+          value={shippingDetails.phone}
+          error={fieldErrors.phone?.[0]}
+          autoComplete="tel"
+          onChange={updateField}
+        />
+        <TextField
           label="Pais / region"
           name="country"
           value={shippingDetails.country}
@@ -274,6 +284,7 @@ function findFirstInvalidField(fieldErrors: FieldErrors) {
     'city',
     'postalCode',
     'province',
+    'phone',
     'country',
   ] satisfies Array<keyof CheckoutShippingDetails>;
 

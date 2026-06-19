@@ -2,8 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { clearCart } from '@/features/cart/actions/cart';
 import { useCart } from '@/features/cart/components/cart-provider';
+import { confirmCheckoutPendingOrders } from '@/features/checkout/actions/checkout';
+import {
+  CHECKOUT_SHIPPING_STORAGE_KEY,
+  checkoutShippingSchema,
+} from '@/features/checkout/schema';
 
 export function PaymentActions() {
   const router = useRouter();
@@ -11,24 +15,40 @@ export function PaymentActions() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function finishSuccessfulPayment() {
+  function confirmPendingOrder() {
     setError(null);
 
     startTransition(async () => {
+      const shippingDetails = readStoredShippingDetails();
+
+      if (!shippingDetails) {
+        setError(
+          'Necesitamos tus datos de envio antes de confirmar el pedido.',
+        );
+        return;
+      }
+
       try {
-        await clearCart();
+        const result = await confirmCheckoutPendingOrders(shippingDetails);
+
+        if (!result.success) {
+          setError(result.message);
+          return;
+        }
+
+        sessionStorage.removeItem(CHECKOUT_SHIPPING_STORAGE_KEY);
         dispatchCart({ type: 'set', quantity: 0 });
-        router.push('/?payment=success');
+        router.push('/purchases?checkout=success');
       } catch {
         setError(
-          'No pudimos confirmar el pago porque no se pudo vaciar el carrito. Intentalo nuevamente.',
+          'No pudimos confirmar el pedido. Intentalo nuevamente.',
         );
       }
     });
   }
 
-  function finishFailedPayment() {
-    router.push('/?payment=error');
+  function returnToReview() {
+    router.push('/checkout/review');
   }
 
   return (
@@ -41,21 +61,38 @@ export function PaymentActions() {
       <div className="grid gap-3 sm:grid-cols-2">
         <button
           type="button"
-          onClick={finishSuccessfulPayment}
+          onClick={confirmPendingOrder}
           disabled={isPending}
           className="inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? 'Confirmando...' : 'Simular éxito'}
+          {isPending ? 'Confirmando...' : 'Confirmar pedido'}
         </button>
         <button
           type="button"
-          onClick={finishFailedPayment}
+          onClick={returnToReview}
           disabled={isPending}
           className="inline-flex min-h-12 items-center justify-center rounded-sm bg-surface-container-high px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-primary transition hover:bg-surface-container-highest focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Simular error
+          Volver a revisar
         </button>
       </div>
     </div>
   );
+}
+
+function readStoredShippingDetails() {
+  const storedDetails = sessionStorage.getItem(CHECKOUT_SHIPPING_STORAGE_KEY);
+
+  if (!storedDetails) {
+    return null;
+  }
+
+  try {
+    const result = checkoutShippingSchema.safeParse(JSON.parse(storedDetails));
+
+    return result.success ? result.data : null;
+  } catch {
+    sessionStorage.removeItem(CHECKOUT_SHIPPING_STORAGE_KEY);
+    return null;
+  }
 }

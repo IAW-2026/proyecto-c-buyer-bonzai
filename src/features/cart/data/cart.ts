@@ -72,8 +72,21 @@ export async function getCartForUser(
 }
 
 export async function addProductToCart(clerkUserId: string, productId: string) {
-  await assertProductExists(productId);
+  const product = await assertProductAvailable(productId);
   const cart = await getOrCreateCartForUser(clerkUserId);
+  const existingItem = await prisma.cartItem.findUnique({
+    where: {
+      cart_id_product_id: {
+        cart_id: cart.id,
+        product_id: productId,
+      },
+    },
+    select: { quantity: true },
+  });
+
+  if ((existingItem?.quantity ?? 0) >= product.stock) {
+    throw new Error('Not enough stock available');
+  }
 
   return prisma.cartItem.upsert({
     where: {
@@ -185,10 +198,16 @@ async function getExistingCartForUser(clerkUserId: string) {
   });
 }
 
-async function assertProductExists(productId: string) {
+async function assertProductAvailable(productId: string) {
   const product = await getProductById(productId);
 
   if (!product) {
     throw new Error('Product not found');
   }
+
+  if (product.stock <= 0) {
+    throw new Error('Product is out of stock');
+  }
+
+  return product;
 }

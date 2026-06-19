@@ -24,7 +24,7 @@ export default async function CheckoutReviewPage() {
             Detalles del pedido
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-secondary md:text-base">
-            Confirma la direccion y el resumen antes de avanzar al pago simulado.
+            Confirma la direccion y el resumen antes de crear tu pedido pendiente.
           </p>
         </header>
 
