@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { RefundRequestButton } from './refund-request-button';
-import type { PurchaseHistoryOrder, PurchaseOrderItem } from '../types';
-import { getMockPurchasesForBuyer } from '@/features/purchases/data/purchases';
+import type { PurchaseOrderItem } from '../types';
+import { getOrdersForBuyer } from '@/features/purchases/data/purchases';
 
 type PurchaseHistoryViewProps = {
   userId: string;
@@ -11,17 +11,17 @@ type PurchaseHistoryViewProps = {
 export async function PurchaseHistoryView({
   userId,
 }: PurchaseHistoryViewProps) {
-  const purchases = await getMockPurchasesForBuyer(userId);
+  const orders = await getOrdersForBuyer(userId);
 
-  if (purchases.length === 0) {
+  if (orders.length === 0) {
     return <EmptyPurchases />;
   }
 
   return (
-    <section className="space-y-8" aria-label="Purchase history">
-      {purchases.map((purchase) => (
+    <section className="space-y-8" aria-label="Order history">
+      {orders.map((order) => (
         <article
-          key={purchase.id}
+          key={order.orderId}
           className="grid gap-5 bg-surface-container-low p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start"
         >
           <div className="bg-surface-container-lowest p-5 sm:p-7">
@@ -31,24 +31,24 @@ export async function PurchaseHistoryView({
                   Ordered on
                 </p>
                 <h2 className="mt-2 font-headline text-4xl leading-none tracking-[-0.03em] text-primary sm:text-5xl">
-                  {formatDate(purchase.createdAt)}
+                  {formatDate(order.createdAt)}
                 </h2>
                 <p className="mt-3 font-label text-[11px] uppercase tracking-[0.18em] text-secondary">
-                  {purchase.id}
+                  {order.orderId}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 md:justify-end">
-                <StatusPill label="Order" value={purchase.status} />
+                <StatusPill label="Order" value={order.status} />
                 <StatusPill
                   label="Payment"
-                  value={purchase.transaction.status}
+                  value={order.status === 'PAID' ? 'COMPLETED' : 'PENDING'}
                 />
               </div>
             </div>
 
             <div className="mt-8 grid gap-3" aria-label="Purchased products">
-              {purchase.items.map((item) => (
+              {order.items.map((item) => (
                 <PurchasedProduct key={item.id} item={item} />
               ))}
             </div>
@@ -59,42 +59,35 @@ export async function PurchaseHistoryView({
                   Order total
                 </p>
                 <p className="mt-1 font-headline text-4xl leading-none text-primary">
-                  {formatCurrency(purchase.total)}
+                  {formatCurrency(order.total)}
                 </p>
               </div>
               <RefundRequestButton
-                orderId={purchase.id}
-                disabled={!canRequestRefund(purchase)}
+                orderId={order.orderId}
+                disabled
               />
             </div>
           </div>
 
           <aside className="bg-surface-container-lowest p-5 sm:p-6 lg:sticky lg:top-6">
             <p className="font-label text-xs uppercase tracking-[0.2em] text-secondary">
-              Shipping details
+              Fulfillment
             </p>
             <p className="mt-3 font-headline text-3xl leading-none text-primary">
-              {formatStatus(purchase.shipment.status)}
+              {order.trackingId ? 'Tracking assigned' : 'Awaiting tracking'}
             </p>
 
             <dl className="mt-7 space-y-5 text-sm leading-6">
-              <Detail label="Tracking" value={purchase.shipment.trackingId} />
+              <Detail label="Tracking" value={order.trackingId ?? 'Pending'} />
               <Detail
-                label="Delivery address"
-                value={purchase.shipment.deliveryAddress}
+                label="Order created"
+                value={formatDate(order.createdAt)}
               />
               <Detail
-                label="Shipment created"
-                value={formatDate(purchase.shipment.createdAt)}
+                label="Payment status"
+                value={order.status === 'PAID' ? 'Completed' : 'Pending'}
               />
-              <Detail
-                label="Delivered"
-                value={
-                  purchase.shipment.deliveredAt
-                    ? formatDate(purchase.shipment.deliveredAt)
-                    : 'Pending delivery'
-                }
-              />
+              <Detail label="Current status" value={formatStatus(order.status)} />
             </dl>
           </aside>
         </article>
@@ -107,7 +100,7 @@ export function PurchaseHistorySkeleton() {
   return (
     <section
       className="space-y-8"
-      aria-label="Purchase history loading"
+      aria-label="Order history loading"
       aria-busy="true"
     >
       {Array.from({ length: 2 }, (_, index) => (
@@ -215,7 +208,7 @@ function EmptyPurchases() {
   return (
     <section className="bg-surface-container-low p-6 text-center sm:p-10">
       <p className="font-label text-xs uppercase tracking-[0.2em] text-secondary">
-        No purchases yet
+        No orders yet
       </p>
       <h2 className="mx-auto mt-3 max-w-2xl font-headline text-4xl leading-tight text-primary sm:text-5xl">
         Your archive is still waiting for its first living piece.
@@ -227,13 +220,6 @@ function EmptyPurchases() {
         Browse the archive
       </Link>
     </section>
-  );
-}
-
-function canRequestRefund(purchase: PurchaseHistoryOrder) {
-  return (
-    purchase.status !== 'CANCELLED' &&
-    purchase.transaction.status !== 'REFUNDED'
   );
 }
 

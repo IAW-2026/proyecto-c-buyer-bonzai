@@ -1,6 +1,8 @@
 export type OrderStatus =
   | 'PENDING'
   | 'PAID'
+  | 'AWAITING_TRACKING'
+  | 'SHIPPED'
   | 'DISPATCHED'
   | 'DELIVERED'
   | 'CANCELLED';
