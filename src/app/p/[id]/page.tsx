@@ -82,17 +82,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </p>
               </div>
 
-              <AddToCartButton
-                productId={product.id}
-                className="inline-flex cursor-pointer justify-center rounded-sm bg-primary px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
-              />
+              {product.stock > 0 ? (
+                <AddToCartButton
+                  productId={product.id}
+                  className="inline-flex cursor-pointer justify-center rounded-sm bg-primary px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+                />
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex cursor-not-allowed justify-center rounded-sm bg-surface-container-high px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-outline"
+                >
+                  Out of stock
+                </button>
+              )}
             </div>
           </div>
 
           <dl className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
             <ProductDetail label="Care profile" value={product.careLabel} />
             <ProductDetail label="Collection" value={product.category} />
-            <ProductDetail label="Selection" value="Curated by Bonzai" />
+            <ProductDetail label="Stock" value={`${product.stock} available`} />
           </dl>
         </section>
       </article>

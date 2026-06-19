@@ -3,14 +3,25 @@ export type ProductImage = {
   alt: string;
 };
 
-export type Product = {
+export type ProductCategory = {
   id: string;
   name: string;
+};
+
+export type Product = {
+  id: string;
+  sellerId: string;
+  sellerEmail: string | null;
+  categoryId: string | null;
+  name: string;
   category: string;
-  careLabel: string;
+  careLabel: string; //TODO Ver si dejarlo o sacarlo
   description: string;
   price: number;
-  tags: string[];
+  stock: number;
+  isActive: boolean;
+  isFragile: boolean;
+  tags: string[]; //TODO Ver si dejarlo o sacarlo
   image: ProductImage;
-  imageAspect: 'featured' | 'portrait' | 'square';
+  imageAspect: 'featured' | 'portrait' | 'square'; //TODO Ver si dejarlo o sacarlo
 };

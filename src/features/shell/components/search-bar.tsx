@@ -74,7 +74,7 @@ function SearchBarInner({
     const params = new URLSearchParams();
 
     if (item.type === 'category') {
-      params.set('category', item.label);
+      params.set('category', item.id);
     } else {
       params.set('q', item.label);
     }
