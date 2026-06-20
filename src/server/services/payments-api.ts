@@ -2,7 +2,7 @@ import 'server-only';
 
 import { z } from 'zod';
 
-const DEFAULT_PAYMENTS_API_URL = 'https://proyecto-c-payments-bonzai.vercel.app';
+const PAYMENTS_API_URL = 'https://proyecto-c-payments-bonzai.vercel.app';
 const DEFAULT_PAYMENTS_CHECKOUT_PATH = '/api/payments/checkout';
 const DEFAULT_PAYMENTS_API_KEY_HEADER = 'x-service-key';
 
@@ -92,9 +92,7 @@ async function paymentsFetch(
 }
 
 function paymentsUrl(path: string) {
-  const baseUrl = (
-    process.env.PAYMENTS_API_URL?.trim() || DEFAULT_PAYMENTS_API_URL
-  ).replace(/\/+$/, '');
+  const baseUrl = PAYMENTS_API_URL.replace(/\/+$/, '');
 
   return new URL(path.replace(/^\/+/, ''), `${baseUrl}/`);
 }
@@ -116,7 +114,9 @@ function getPaymentsApiKey() {
   const apiKey = process.env.PAYMENTS_API_KEY?.trim();
 
   if (!apiKey) {
-    throw new PaymentsApiError('Missing PAYMENTS_API_KEY environment variable.');
+    throw new PaymentsApiError(
+      'Missing PAYMENTS_API_KEY environment variable.',
+    );
   }
 
   return apiKey;

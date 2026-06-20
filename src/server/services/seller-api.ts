@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Product, ProductCategory } from '@/features/shop/types';
 
-const DEFAULT_SELLER_API_URL = 'https://proyecto-c-seller-bonzai.vercel.app';
+const SELLER_API_URL = 'https://proyecto-c-seller-bonzai.vercel.app';
 
 const categorySchema = z
   .object({
@@ -109,7 +109,7 @@ const purchasesResponseSchema = z
 const createdOrderSchema = z.object({
   orderId: z.string(),
   sellerId: z.string(),
-  // total: z.number(),
+  subtotal: z.number(),
 });
 
 const createOrdersResponseSchema = z.object({
@@ -245,8 +245,6 @@ export async function createSellerOrders(
     body,
   });
 
-  console.log('Seller order creation response payload:', JSON.stringify(payload));
-
   const result = createOrdersResponseSchema.parse(payload);
 
   if (!result.success) {
@@ -326,9 +324,7 @@ async function sellerFetch(
 }
 
 function sellerUrl(path: string) {
-  const baseUrl = (
-    process.env.SELLER_API_URL?.trim() || DEFAULT_SELLER_API_URL
-  ).replace(/\/+$/, '');
+  const baseUrl = SELLER_API_URL.replace(/\/+$/, '');
 
   return new URL(path.replace(/^\/+/, ''), `${baseUrl}/`);
 }
