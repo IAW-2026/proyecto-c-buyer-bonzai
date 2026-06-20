@@ -13,7 +13,9 @@ export function PaymentActions() {
   const router = useRouter();
   const { dispatchCart } = useCart();
   const [error, setError] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const isBusy = isPending || isRedirecting;
 
   function confirmPendingOrder() {
     setError(null);
@@ -38,10 +40,12 @@ export function PaymentActions() {
 
         sessionStorage.removeItem(CHECKOUT_SHIPPING_STORAGE_KEY);
         dispatchCart({ type: 'set', quantity: 0 });
-        router.push('/purchases?checkout=success');
+        setIsRedirecting(true);
+        window.location.assign(result.paymentUrl);
       } catch {
+        setIsRedirecting(false);
         setError(
-          'No pudimos confirmar el pedido. Intentalo nuevamente.',
+          'No pudimos iniciar el pago. Intentalo nuevamente.',
         );
       }
     });
@@ -62,15 +66,15 @@ export function PaymentActions() {
         <button
           type="button"
           onClick={confirmPendingOrder}
-          disabled={isPending}
+          disabled={isBusy}
           className="inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? 'Confirmando...' : 'Confirmar pedido'}
+          {isBusy ? 'Preparando pago...' : 'Pagar con Mercado Pago'}
         </button>
         <button
           type="button"
           onClick={returnToReview}
-          disabled={isPending}
+          disabled={isBusy}
           className="inline-flex min-h-12 items-center justify-center rounded-sm bg-surface-container-high px-8 py-4 font-label text-xs uppercase tracking-[0.16em] text-primary transition hover:bg-surface-container-highest focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
           Volver a revisar

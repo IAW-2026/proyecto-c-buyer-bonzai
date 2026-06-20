@@ -3,21 +3,29 @@
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { clearCartForUser, getCartForUser } from '@/features/cart/data/cart';
+import type { CartViewModel } from '@/features/cart/types';
 import {
   checkoutShippingSchema,
   type CheckoutShippingDetails,
 } from '@/features/checkout/schema';
 import {
-  cancelSellerReservation,
+  createPaymentsCheckout,
+  PaymentsApiError,
+} from '@/server/services/payments-api';
+import {
   createSellerOrders,
   createSellerReservations,
+  type CreateSellerOrdersResult,
   SellerApiError,
 } from '@/server/services/seller-api';
 
 export type ConfirmCheckoutResult =
   | {
       success: true;
-      orderIds: string[];
+      orders: CreateSellerOrdersResult['orders'];
+      paymentUrl: string;
+      transactionId: string;
+      paymentStatus: string;
       message: string;
     }
   | {
@@ -73,7 +81,8 @@ export async function confirmCheckoutPendingOrders(
     sellerId: item.product.sellerId,
   }));
   let reservationIds: string[] = [];
-  let orderIds: string[];
+  let createdOrders: CreateSellerOrdersResult;
+  let paymentsCheckout: Awaited<ReturnType<typeof createPaymentsCheckout>>;
 
   try {
     reservationIds = await createSellerReservations({
@@ -85,7 +94,7 @@ export async function confirmCheckoutPendingOrders(
       throw new SellerApiError('Seller did not return reservation ids.');
     }
 
-    orderIds = await createSellerOrders({
+    createdOrders = await createSellerOrders({
       buyerId: userId,
       reservationIds,
       status: 'PENDING',
@@ -97,9 +106,14 @@ export async function confirmCheckoutPendingOrders(
       shippingZip: shipping.postalCode,
       shippingPhone: shipping.phone,
     });
-  } catch (error) {
-    await cancelReservationsQuietly(reservationIds);
 
+    const paymentOrders = buildPaymentsOrders(createdOrders.orders, cart.items);
+
+    paymentsCheckout = await createPaymentsCheckout({
+      buyerId: userId,
+      orders: paymentOrders,
+    });
+  } catch (error) {
     return {
       success: false,
       message: getCheckoutErrorMessage(error),
@@ -115,19 +129,49 @@ export async function confirmCheckoutPendingOrders(
 
   return {
     success: true,
-    orderIds,
+    orders: createdOrders.orders,
+    paymentUrl: paymentsCheckout.paymentUrl,
+    transactionId: paymentsCheckout.transactionId,
+    paymentStatus: paymentsCheckout.status,
     message: 'Pedido creado y pendiente de pago.',
   };
 }
 
-async function cancelReservationsQuietly(reservationIds: string[]) {
-  if (reservationIds.length === 0) {
-    return;
+function buildPaymentsOrders(
+  sellerOrders: CreateSellerOrdersResult['orders'],
+  cartItems: CartViewModel['items'],
+) {
+  if (sellerOrders.length === 0) {
+    throw new SellerApiError('Seller did not return orders to pay.');
   }
 
-  await Promise.allSettled(
-    reservationIds.map((reservationId) => cancelSellerReservation(reservationId)),
-  );
+  const totalsBySeller = cartItems.reduce((totals, item) => {
+    const currentTotal = totals.get(item.product.sellerId) ?? 0;
+
+    totals.set(item.product.sellerId, currentTotal + item.lineTotal);
+
+    return totals;
+  }, new Map<string, number>());
+
+  return sellerOrders.map((order) => {
+    const total = totalsBySeller.get(order.sellerId);
+
+    if (!total || total <= 0) {
+      throw new SellerApiError(
+        `No pudimos calcular el total para el seller ${order.sellerId}.`,
+      );
+    }
+
+    return {
+      sellerId: order.sellerId,
+      amount: roundMoney(total),
+      orderRef: order.orderId,
+    };
+  });
+}
+
+function roundMoney(amount: number) {
+  return Math.round(amount * 100) / 100;
 }
 
 function formatShippingAddress(details: CheckoutShippingDetails) {
@@ -142,6 +186,10 @@ function formatShippingAddress(details: CheckoutShippingDetails) {
 
 function getCheckoutErrorMessage(error: unknown) {
   if (error instanceof SellerApiError) {
+    return error.message;
+  }
+
+  if (error instanceof PaymentsApiError) {
     return error.message;
   }
 

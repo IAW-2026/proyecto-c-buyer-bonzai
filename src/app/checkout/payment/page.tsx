@@ -25,8 +25,8 @@ export default async function CheckoutPaymentPage() {
             Reserva y orden
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-secondary md:text-base">
-            Al confirmar, Bonzai reserva el stock con Seller y crea tus ordenes
-            en estado pendiente.
+            Al continuar, Bonzai reserva el stock, crea tus ordenes pendientes
+            y prepara el link seguro de Mercado Pago.
           </p>
         </header>
 
@@ -54,19 +54,20 @@ async function CheckoutPaymentContent({ userId }: { userId: string }) {
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
-      <section className="bg-surface-container-lowest p-6 sm:p-8" aria-labelledby="payment-simulation-title">
+      <section className="bg-surface-container-lowest p-6 sm:p-8" aria-labelledby="payment-checkout-title">
         <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
           Ultimo paso
         </p>
         <h2
-          id="payment-simulation-title"
+          id="payment-checkout-title"
           className="mt-4 font-headline text-4xl leading-none tracking-[-0.04em] text-primary"
         >
-          Confirma tu pedido pendiente.
+          Continua con Mercado Pago.
         </h2>
         <p className="mt-5 max-w-xl text-sm leading-7 text-secondary">
           Vamos a validar stock, reservar los productos y crear una orden por
-          cada seller. El pago queda fuera de este flujo por ahora.
+          cada seller. Luego te llevamos al sandbox de Mercado Pago para
+          completar el pago.
         </p>
         <PaymentActions />
         <Link
