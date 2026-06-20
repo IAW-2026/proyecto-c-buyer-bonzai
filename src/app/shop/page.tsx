@@ -164,7 +164,7 @@ function ShopContentSkeleton() {
         {Array.from({ length: 6 }, (_, index) => (
           <article key={index} className="bg-surface-container-lowest p-4 sm:p-6 md:col-span-4">
             <div className="mb-6 aspect-4/5 animate-pulse bg-surface-container-highest" />
-            <div className="mb-3 h-5 w-24 rounded-full bg-secondary-container/60" />
+            <div className="mb-3 h-3 w-24 bg-surface-container" />
             <div className="h-8 w-3/4 bg-surface-container-high" />
             <div className="mt-4 space-y-2">
               <div className="h-4 w-full bg-surface-container" />

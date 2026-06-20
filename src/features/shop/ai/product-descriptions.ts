@@ -5,10 +5,9 @@ import { getGeminiClient, getGeminiModel, isGeminiConfigured } from '@/lib/gemin
 
 export type ProductDescriptionInput = {
   name: string;
-  category: string;
-  careLabel: string;
-  tags: string[];
-  imageAlt?: string;
+  categoryName: string | null;
+  description: string | null;
+  imageUrl: string | null;
 };
 
 export async function generateProductDescription(
@@ -35,10 +34,16 @@ const getCachedProductDescription = unstable_cache(
 
 function fallbackProductDescription({
   name,
-  category,
-  careLabel,
+  categoryName,
+  description,
 }: ProductDescriptionInput) {
-  return `${name} is a considered ${category.toLowerCase()} piece selected for calm interiors, pairing a ${careLabel.toLowerCase()} care profile with Bonzai's quiet editorial sensibility.`;
+  if (description) {
+    return description;
+  }
+
+  const categoryLabel = categoryName?.toLowerCase() ?? 'marketplace';
+
+  return `${name} is a considered ${categoryLabel} piece selected for calm interiors and Bonzai's quiet editorial sensibility.`;
 }
 
 async function tryGenerateProductDescription(product: ProductDescriptionInput) {
@@ -62,10 +67,9 @@ async function tryGenerateProductDescription(product: ProductDescriptionInput) {
 
 function buildProductDescriptionPrompt({
   name,
-  category,
-  careLabel,
-  tags,
-  imageAlt,
+  categoryName,
+  description,
+  imageUrl,
 }: ProductDescriptionInput) {
   return `Write one concise English product description for Bonzai, a premium plant and plant-accessory marketplace.
 
@@ -75,10 +79,9 @@ Avoid: markdown, quotation marks, hard-sell language, emojis, price mentions, in
 
 Product attributes:
 - Name: ${name}
-- Category: ${category}
-- Care profile: ${careLabel}
-- Tags: ${tags.length > 0 ? tags.join(', ') : 'None'}
-- Image note: ${imageAlt || 'Not provided'}
+- Category: ${categoryName ?? 'Not provided'}
+- Seller description: ${description ?? 'Not provided'}
+- Image URL: ${imageUrl ?? 'Not provided'}
 
 Return only the description.`;
 }

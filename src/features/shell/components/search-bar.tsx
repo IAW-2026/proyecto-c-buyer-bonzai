@@ -144,7 +144,7 @@ function SearchBarInner({
           id="site-search"
           name="q"
           type="search"
-          placeholder="Search plants, vessels, care notes"
+          placeholder="Search plants, vessels, categories"
           value={query}
           autoComplete="off"
           role="combobox"
