@@ -2,102 +2,127 @@ import { z } from 'zod';
 import type { Product, ProductCategory } from '@/features/shop/types';
 
 const DEFAULT_SELLER_API_URL = 'https://proyecto-c-seller-bonzai.vercel.app';
-const PRODUCT_IMAGE_PLACEHOLDER = '/images/product-placeholder.svg';
 
 const categorySchema = z
   .object({
     id: z.string(),
     name: z.string(),
   })
-  .passthrough();
+  .strict();
 
 const sellerSchema = z
   .object({
     id: z.string(),
-    email: z.string().optional(),
+    email: z.string(),
+    approved: z.boolean().optional(),
+    suspended: z.boolean().optional(),
   })
-  .passthrough();
+  .strict();
 
 const sellerProductSchema = z
   .object({
     id: z.string(),
-    sellerId: z.string().optional(),
-    seller_id: z.string().optional(),
-    categoryId: z.string().nullable().optional(),
-    category_id: z.string().nullable().optional(),
-    imageUrl: z.string().nullable().optional(),
-    image_url: z.string().nullable().optional(),
+    sellerId: z.string(),
+    categoryId: z.string().nullable(),
     name: z.string(),
-    description: z.string().nullable().optional(),
-    price: z.coerce.number(),
-    stock: z.coerce.number().int(),
-    isActive: z.boolean().optional(),
-    is_active: z.boolean().optional(),
-    isFragile: z.boolean().optional(),
-    is_fragile: z.boolean().optional(),
-    category: categorySchema.nullable().optional(),
-    seller: sellerSchema.nullable().optional(),
-  })
-  .passthrough();
-
-const productsBrowseSchema = z.object({
-  products: z.array(sellerProductSchema),
-  total: z.coerce.number(),
-  page: z.coerce.number(),
-  limit: z.coerce.number(),
-});
-
-const productDetailSchema = z.object({
-  product: sellerProductSchema,
-});
-
-const categoriesResponseSchema = z.object({
-  categories: z.array(categorySchema),
-});
-
-const reservationsResponseSchema = z.object({
-  success: z.boolean(),
-  reservationIds: z.array(z.string()),
-});
-
-const ordersResponseSchema = z.object({
-  success: z.boolean(),
-  orderIds: z.array(z.string()),
-});
-
-const orderItemSchema = z
-  .object({
-    id: z.string().optional(),
-    productId: z.string().optional(),
-    product_id: z.string().optional(),
-    productName: z.string().optional(),
-    product_name: z.string().optional(),
-    unitPrice: z.coerce.number().optional(),
-    unit_price: z.coerce.number().optional(),
-    quantity: z.coerce.number().int(),
-    subtotal: z.coerce.number().optional(),
-  })
-  .passthrough();
-
-const orderSchema = z
-  .object({
-    orderId: z.string().optional(),
-    id: z.string().optional(),
-    status: z.string(),
-    total: z.coerce.number(),
+    description: z.string().nullable(),
+    price: z.number(),
+    stock: z.number().int(),
+    isActive: z.boolean(),
+    imageUrl: z.string().nullable(),
+    isFragile: z.boolean(),
+    suspended: z.boolean(),
+    moderationStatus: z.string(),
+    moderationNote: z.string().nullable(),
+    slug: z.string(),
     createdAt: z.string(),
-    items: z.array(orderItemSchema).default([]),
-    trackingId: z.string().nullable().optional(),
+    updatedAt: z.string(),
+    category: categorySchema.nullable(),
+    seller: sellerSchema,
   })
-  .passthrough();
+  .strict();
 
-const ordersListSchema = z.object({
-  orders: z.array(orderSchema),
+const productsBrowseSchema = z
+  .object({
+    products: z.array(sellerProductSchema),
+    total: z.number(),
+    page: z.number(),
+    limit: z.number(),
+  })
+  .strict();
+
+const productDetailSchema = z
+  .object({
+    product: sellerProductSchema,
+  })
+  .strict();
+
+const categoriesResponseSchema = z
+  .object({
+    categories: z.array(categorySchema),
+  })
+  .strict();
+
+const reservationsResponseSchema = z
+  .object({
+    success: z.boolean(),
+    reservationIds: z.array(z.string()),
+  })
+  .strict();
+
+const purchaseOrderItemSchema = z
+  .object({
+    productId: z.string(),
+    name: z.string(),
+    quantity: z.number().int(),
+    price: z.number(),
+  })
+  .strict();
+
+const purchaseOrderSchema = z
+  .object({
+    orderId: z.string(),
+    sellerId: z.string(),
+    status: z.string(),
+    total: z.number(),
+    createdAt: z.string(),
+    trackingId: z.string().nullable(),
+    items: z.array(purchaseOrderItemSchema),
+  })
+  .strict();
+
+const purchaseSchema = z
+  .object({
+    purchaseId: z.string(),
+    status: z.literal('COMPLETED'),
+    createdAt: z.string(),
+    orders: z.array(purchaseOrderSchema),
+  })
+  .strict();
+
+const purchasesResponseSchema = z
+  .object({
+    purchases: z.array(purchaseSchema),
+  })
+  .strict();
+
+const createdOrderSchema = z.object({
+  orderId: z.string(),
+  sellerId: z.string(),
+  // total: z.number(),
 });
 
-type SellerProduct = z.infer<typeof sellerProductSchema>;
-type SellerOrder = z.infer<typeof orderSchema>;
-type SellerOrderItem = z.infer<typeof orderItemSchema>;
+const createOrdersResponseSchema = z.object({
+  success: z.boolean(),
+  orders: z.array(createdOrderSchema),
+});
+
+export type BuyerPurchase = z.infer<typeof purchaseSchema>;
+export type BuyerPurchaseOrder = z.infer<typeof purchaseOrderSchema>;
+export type BuyerPurchaseOrderItem = z.infer<typeof purchaseOrderItemSchema>;
+export type CreateSellerOrdersResult = z.infer<
+  typeof createOrdersResponseSchema
+>;
 
 export type ProductBrowseResult = {
   products: Product[];
@@ -123,22 +148,6 @@ export type SellerOrderPayload = {
   shippingProvince: string;
   shippingZip: string;
   shippingPhone: string;
-};
-
-export type BuyerOrder = {
-  orderId: string;
-  status: string;
-  total: number;
-  createdAt: string;
-  trackingId: string | null;
-  items: Array<{
-    id: string;
-    productId: string;
-    productName: string;
-    unitPrice: number;
-    quantity: number;
-    subtotal: number;
-  }>;
 };
 
 export class SellerApiError extends Error {
@@ -172,10 +181,8 @@ export async function browseSellerProducts({
   });
   const result = productsBrowseSchema.parse(payload);
 
-  console.log(result.products);
-
   return {
-    products: result.products.map(mapSellerProduct),
+    products: result.products,
     total: result.total,
     page: result.page,
     limit: result.limit,
@@ -184,10 +191,12 @@ export async function browseSellerProducts({
 
 export async function getSellerProductById(id: string) {
   try {
-    const payload = await sellerFetch(`/api/products/browse/${encodeURIComponent(id)}`);
+    const payload = await sellerFetch(
+      `/api/products/browse/${encodeURIComponent(id)}`,
+    );
     const result = productDetailSchema.parse(payload);
 
-    return mapSellerProduct(result.product);
+    return result.product;
   } catch (error) {
     if (error instanceof SellerApiError && error.status === 404) {
       return null;
@@ -227,19 +236,36 @@ export async function createSellerReservations({
   return result.reservationIds;
 }
 
-export async function createSellerOrders(body: SellerOrderPayload) {
+export async function createSellerOrders(
+  body: SellerOrderPayload,
+): Promise<CreateSellerOrdersResult> {
   const payload = await sellerFetch('/api/orders/new', {
     method: 'POST',
     serviceKey: true,
     body,
   });
-  const result = ordersResponseSchema.parse(payload);
+
+  console.log('Seller order creation response payload:', JSON.stringify(payload));
+
+  const result = createOrdersResponseSchema.parse(payload);
 
   if (!result.success) {
     throw new SellerApiError('Seller could not create the order.');
   }
 
-  return result.orderIds;
+  return result;
+}
+
+export async function getBuyerPurchases(
+  buyerId: string,
+): Promise<BuyerPurchase[]> {
+  const payload = await sellerFetch('/api/purchases', {
+    query: { buyerId },
+    serviceKey: true,
+  });
+  const result = purchasesResponseSchema.parse(payload);
+
+  return result.purchases;
 }
 
 export async function cancelSellerReservation(reservationId: string) {
@@ -247,16 +273,6 @@ export async function cancelSellerReservation(reservationId: string) {
     method: 'DELETE',
     serviceKey: true,
   });
-}
-
-export async function getBuyerOrders(buyerId: string): Promise<BuyerOrder[]> {
-  const payload = await sellerFetch('/api/orders/my', {
-    serviceKey: true,
-    query: { buyerId },
-  });
-  const result = ordersListSchema.parse(payload);
-
-  return result.orders.map(mapBuyerOrder);
 }
 
 async function sellerFetch(
@@ -343,72 +359,4 @@ async function readSellerError(response: Response) {
   }
 
   return response.statusText || 'Seller API request failed.';
-}
-
-function mapSellerProduct(product: SellerProduct): Product {
-  const sellerId = product.sellerId ?? product.seller_id ?? product.seller?.id;
-
-  if (!sellerId) {
-    throw new SellerApiError(`Product ${product.id} is missing seller id.`);
-  }
-
-  const categoryId =
-    product.categoryId ?? product.category_id ?? product.category?.id ?? null;
-  const categoryName = product.category?.name ?? 'Uncategorized';
-  const isFragile = product.isFragile ?? product.is_fragile ?? false;
-  const imageUrl = product.imageUrl ?? product.image_url ?? PRODUCT_IMAGE_PLACEHOLDER;
-
-  return {
-    id: product.id,
-    sellerId,
-    sellerEmail: product.seller?.email ?? null,
-    categoryId,
-    category: categoryName,
-    name: product.name,
-    description: product.description ?? '',
-    price: product.price,
-    stock: product.stock,
-    isActive: product.isActive ?? product.is_active ?? true,
-    isFragile,
-    careLabel: isFragile ? 'Fragile handling' : 'Standard handling',
-    tags: isFragile ? [categoryName, 'Fragile'] : [categoryName],
-    imageAspect: 'portrait',
-    image: {
-      src: imageUrl,
-      alt: `${product.name} product photo`,
-    },
-  };
-}
-
-function mapBuyerOrder(order: SellerOrder): BuyerOrder {
-  const orderId = order.orderId ?? order.id;
-
-  if (!orderId) {
-    throw new SellerApiError('Order response is missing order id.');
-  }
-
-  return {
-    orderId,
-    status: order.status,
-    total: order.total,
-    createdAt: order.createdAt,
-    trackingId: order.trackingId ?? null,
-    items: order.items.map((item, index) => mapBuyerOrderItem(item, index)),
-  };
-}
-
-function mapBuyerOrderItem(item: SellerOrderItem, index: number) {
-  const productId = item.productId ?? item.product_id ?? `product-${index + 1}`;
-  const productName = item.productName ?? item.product_name ?? 'Product';
-  const unitPrice = item.unitPrice ?? item.unit_price ?? 0;
-  const subtotal = item.subtotal ?? unitPrice * item.quantity;
-
-  return {
-    id: item.id ?? `${productId}-${index + 1}`,
-    productId,
-    productName,
-    unitPrice,
-    quantity: item.quantity,
-    subtotal,
-  };
 }

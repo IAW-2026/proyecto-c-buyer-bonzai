@@ -1,27 +1,32 @@
-export type ProductImage = {
-  src: string;
-  alt: string;
-};
-
 export type ProductCategory = {
   id: string;
   name: string;
 };
 
+export type ProductSeller = {
+  id: string;
+  email: string;
+  approved?: boolean;
+  suspended?: boolean;
+};
+
 export type Product = {
   id: string;
   sellerId: string;
-  sellerEmail: string | null;
   categoryId: string | null;
   name: string;
-  category: string;
-  careLabel: string; //TODO Ver si dejarlo o sacarlo
-  description: string;
+  description: string | null;
   price: number;
   stock: number;
   isActive: boolean;
+  imageUrl: string | null;
   isFragile: boolean;
-  tags: string[]; //TODO Ver si dejarlo o sacarlo
-  image: ProductImage;
-  imageAspect: 'featured' | 'portrait' | 'square'; //TODO Ver si dejarlo o sacarlo
+  suspended: boolean;
+  moderationStatus: string;
+  moderationNote: string | null;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+  category: ProductCategory | null;
+  seller: ProductSeller;
 };
