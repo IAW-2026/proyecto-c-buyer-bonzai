@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { formatCurrency, formatDate } from '@/lib/formatters';
+import {
+  getBuyerPurchases,
+  type BuyerPurchaseOrderItem,
+} from '@/server/services/seller-api';
 import { RefundRequestButton } from './refund-request-button';
-import type { PurchaseOrderItem } from '../types';
-import { getOrdersForBuyer } from '@/features/purchases/data/purchases';
 
 type PurchaseHistoryViewProps = {
   userId: string;
@@ -11,87 +13,106 @@ type PurchaseHistoryViewProps = {
 export async function PurchaseHistoryView({
   userId,
 }: PurchaseHistoryViewProps) {
-  const orders = await getOrdersForBuyer(userId);
+  const purchases = await getBuyerPurchases(userId);
 
-  if (orders.length === 0) {
+  if (purchases.length === 0) {
     return <EmptyPurchases />;
   }
 
   return (
-    <section className="space-y-8" aria-label="Order history">
-      {orders.map((order) => (
-        <article
-          key={order.orderId}
-          className="grid gap-5 bg-surface-container-low p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start"
-        >
-          <div className="bg-surface-container-lowest p-5 sm:p-7">
-            <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">
-                  Ordered on
-                </p>
-                <h2 className="mt-2 font-headline text-4xl leading-none tracking-[-0.03em] text-primary sm:text-5xl">
-                  {formatDate(order.createdAt)}
-                </h2>
-                <p className="mt-3 font-label text-[11px] uppercase tracking-[0.18em] text-secondary">
-                  {order.orderId}
-                </p>
+    <section className="space-y-8" aria-label="Purchase history">
+      {purchases.map((purchase) => {
+        const items = purchase.orders.flatMap((order) => order.items);
+        const purchaseTotal = purchase.orders.reduce(
+          (total, order) => total + order.total,
+          0,
+        );
+        const trackingIds = purchase.orders.flatMap((order) =>
+          order.trackingId ? [order.trackingId] : [],
+        );
+        const trackingStatus = getTrackingStatus(
+          trackingIds.length,
+          purchase.orders.length,
+        );
+
+        return (
+          <article
+            key={purchase.purchaseId}
+            className="grid gap-5 bg-surface-container-low p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start"
+          >
+            <div className="bg-surface-container-lowest p-5 sm:p-7">
+              <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">
+                    Purchased on
+                  </p>
+                  <h2 className="mt-2 font-headline text-4xl leading-none tracking-[-0.03em] text-primary sm:text-5xl">
+                    {formatDate(purchase.createdAt)}
+                  </h2>
+                  <p className="mt-3 font-label text-[11px] uppercase tracking-[0.18em] text-secondary">
+                    {purchase.purchaseId}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 md:justify-end">
+                  <StatusPill label="Purchase" value={purchase.status} />
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 md:justify-end">
-                <StatusPill label="Order" value={order.status} />
-                <StatusPill
-                  label="Payment"
-                  value={order.status === 'PAID' ? 'COMPLETED' : 'PENDING'}
+              <div className="mt-8 grid gap-3" aria-label="Purchased products">
+                {items.map((item, index) => (
+                  <PurchasedProduct
+                    key={`${item.productId}-${index}`}
+                    item={item}
+                  />
+                ))}
+              </div>
+
+              <div className="mt-8 flex flex-col gap-4 bg-surface-container p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
+                <div>
+                  <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">
+                    Purchase total
+                  </p>
+                  <p className="mt-1 font-headline text-4xl leading-none text-primary">
+                    {formatCurrency(purchaseTotal)}
+                  </p>
+                </div>
+                <RefundRequestButton
+                  purchaseId={purchase.purchaseId}
+                  disabled
                 />
               </div>
             </div>
 
-            <div className="mt-8 grid gap-3" aria-label="Purchased products">
-              {order.items.map((item) => (
-                <PurchasedProduct key={item.id} item={item} />
-              ))}
-            </div>
+            <aside className="bg-surface-container-lowest p-5 sm:p-6 lg:sticky lg:top-6">
+              <p className="font-label text-xs uppercase tracking-[0.2em] text-secondary">
+                Fulfillment
+              </p>
+              <p className="mt-3 font-headline text-3xl leading-none text-primary">
+                {trackingStatus}
+              </p>
 
-            <div className="mt-8 flex flex-col gap-4 bg-surface-container p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
-              <div>
-                <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">
-                  Order total
-                </p>
-                <p className="mt-1 font-headline text-4xl leading-none text-primary">
-                  {formatCurrency(order.total)}
-                </p>
-              </div>
-              <RefundRequestButton
-                orderId={order.orderId}
-                disabled
-              />
-            </div>
-          </div>
-
-          <aside className="bg-surface-container-lowest p-5 sm:p-6 lg:sticky lg:top-6">
-            <p className="font-label text-xs uppercase tracking-[0.2em] text-secondary">
-              Fulfillment
-            </p>
-            <p className="mt-3 font-headline text-3xl leading-none text-primary">
-              {order.trackingId ? 'Tracking assigned' : 'Awaiting tracking'}
-            </p>
-
-            <dl className="mt-7 space-y-5 text-sm leading-6">
-              <Detail label="Tracking" value={order.trackingId ?? 'Pending'} />
-              <Detail
-                label="Order created"
-                value={formatDate(order.createdAt)}
-              />
-              <Detail
-                label="Payment status"
-                value={order.status === 'PAID' ? 'Completed' : 'Pending'}
-              />
-              <Detail label="Current status" value={formatStatus(order.status)} />
-            </dl>
-          </aside>
-        </article>
-      ))}
+              <dl className="mt-7 space-y-5 text-sm leading-6">
+                <Detail
+                  label="Tracking"
+                  value={
+                    trackingIds.length > 0 ? trackingIds.join(', ') : 'Pending'
+                  }
+                />
+                <Detail
+                  label="Purchase created"
+                  value={formatDate(purchase.createdAt)}
+                />
+                <Detail
+                  label="Purchase status"
+                  value={formatStatus(purchase.status)}
+                />
+                <Detail label="Products" value={String(items.length)} />
+              </dl>
+            </aside>
+          </article>
+        );
+      })}
     </section>
   );
 }
@@ -164,7 +185,7 @@ export function PurchaseHistorySkeleton() {
   );
 }
 
-function PurchasedProduct({ item }: { item: PurchaseOrderItem }) {
+function PurchasedProduct({ item }: { item: BuyerPurchaseOrderItem }) {
   return (
     <div className="grid gap-4 bg-surface-container-low p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
       <div className="min-w-0">
@@ -172,14 +193,14 @@ function PurchasedProduct({ item }: { item: PurchaseOrderItem }) {
           href={`/p/${item.productId}`}
           className="font-headline text-2xl leading-tight text-primary transition hover:text-primary-container focus-visible:outline focus-visible:outline-offset-4 focus-visible:outline-primary"
         >
-          {item.productName}
+          {item.name}
         </Link>
         <p className="mt-2 font-body text-sm text-secondary">
-          {item.quantity} x {formatCurrency(item.unitPrice)}
+          {item.quantity} x {formatCurrency(item.price)}
         </p>
       </div>
       <p className="font-headline text-2xl leading-none text-primary sm:text-right">
-        {formatCurrency(item.subtotal)}
+        {formatCurrency(item.quantity * item.price)}
       </p>
     </div>
   );
@@ -208,7 +229,7 @@ function EmptyPurchases() {
   return (
     <section className="bg-surface-container-low p-6 text-center sm:p-10">
       <p className="font-label text-xs uppercase tracking-[0.2em] text-secondary">
-        No orders yet
+        No purchases yet
       </p>
       <h2 className="mx-auto mt-3 max-w-2xl font-headline text-4xl leading-tight text-primary sm:text-5xl">
         Your archive is still waiting for its first living piece.
@@ -229,4 +250,16 @@ function formatStatus(value: string) {
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
+}
+
+function getTrackingStatus(assignedTrackings: number, packageCount: number) {
+  if (assignedTrackings === 0) {
+    return 'Awaiting tracking';
+  }
+
+  if (assignedTrackings < packageCount) {
+    return 'Partially assigned';
+  }
+
+  return 'Tracking assigned';
 }
