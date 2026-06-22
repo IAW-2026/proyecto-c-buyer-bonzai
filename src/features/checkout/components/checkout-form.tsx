@@ -142,7 +142,7 @@ function AddressSelector({ addresses }: { addresses: CheckoutShippingAddress[] }
         {addresses.map((address, index) => (
           <article
             key={address.id}
-            className="group bg-surface-container-low p-5 transition hover:bg-surface-container sm:p-6 has-[:checked]:bg-surface-container-lowest"
+            className="group bg-surface-container-low p-5 transition hover:bg-surface-container sm:p-6 has-checked:bg-surface-container-lowest"
           >
             <label className="grid cursor-pointer grid-cols-[auto,1fr] gap-4">
               <input
