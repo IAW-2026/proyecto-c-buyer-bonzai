@@ -10,7 +10,30 @@ datasource db {
 model BuyerProfile {
   id            String @id @default(uuid())
   clerk_user_id String @unique
-  cart          Cart?
+  first_name    String?
+  last_name     String?
+  phone         String?
+
+  cart      Cart?
+  addresses ShippingAddress[]
+}
+
+model ShippingAddress {
+  id          String   @id @default(uuid())
+  buyer_id    String
+  label       String?
+  address     String
+  apartment   String?
+  floor       String?
+  city        String
+  postal_code String
+  province    String
+  country     String   @default("Argentina")
+  created_at  DateTime @default(now())
+
+  buyer BuyerProfile @relation(fields: [buyer_id], references: [id], onDelete: Cascade)
+
+  @@index([buyer_id])
 }
 
 model Cart {

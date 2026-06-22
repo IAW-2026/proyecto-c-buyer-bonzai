@@ -2,12 +2,21 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { clearCartForUser, getCartForUser } from '@/features/cart/data/cart';
 import type { CartViewModel } from '@/features/cart/types';
 import {
-  checkoutShippingSchema,
-  type CheckoutShippingDetails,
+  checkoutAddressSelectionSchema,
+  checkoutBuyerProfileSchema,
+  checkoutShippingAddressSchema,
+  type CheckoutBuyerProfileInput,
+  type CheckoutShippingAddressInput,
 } from '@/features/checkout/schema';
+import {
+  formatShippingAddress,
+  getCheckoutShippingSelection,
+} from '@/features/checkout/data/shipping';
+import { prisma } from '@/lib/prisma';
 import {
   createPaymentsCheckout,
   PaymentsApiError,
@@ -18,6 +27,20 @@ import {
   type CreateSellerOrdersResult,
   SellerApiError,
 } from '@/server/services/seller-api';
+
+export type CheckoutBuyerProfileState = {
+  status: 'idle' | 'error';
+  submissionId: number;
+  message: string;
+  fieldErrors: Partial<Record<keyof CheckoutBuyerProfileInput, string[]>>;
+};
+
+export type CheckoutShippingAddressState = {
+  status: 'idle' | 'error';
+  submissionId: number;
+  message: string;
+  fieldErrors: Partial<Record<keyof CheckoutShippingAddressInput, string[]>>;
+};
 
 export type ConfirmCheckoutResult =
   | {
@@ -33,8 +56,199 @@ export type ConfirmCheckoutResult =
       message: string;
     };
 
+export async function saveCheckoutBuyerProfile(
+  previousState: CheckoutBuyerProfileState,
+  formData: FormData,
+): Promise<CheckoutBuyerProfileState> {
+  const { isAuthenticated, userId } = await auth();
+
+  if (!isAuthenticated || !userId) {
+    return buyerProfileErrorState(
+      previousState,
+      'Inicia sesion para guardar tus datos.',
+    );
+  }
+
+  const result = checkoutBuyerProfileSchema.safeParse({
+    firstName: formData.get('firstName'),
+    lastName: formData.get('lastName'),
+    phone: formData.get('phone'),
+  });
+
+  if (!result.success) {
+    return buyerProfileErrorState(
+      previousState,
+      'Revisa los campos marcados para continuar.',
+      result.error.flatten().fieldErrors,
+    );
+  }
+
+  await prisma.buyerProfile.upsert({
+    where: { clerk_user_id: userId },
+    create: {
+      clerk_user_id: userId,
+      first_name: result.data.firstName,
+      last_name: result.data.lastName,
+      phone: result.data.phone,
+    },
+    update: {
+      first_name: result.data.firstName,
+      last_name: result.data.lastName,
+      phone: result.data.phone,
+    },
+  });
+
+  revalidateCheckoutPaths();
+  redirect('/checkout');
+}
+
+export async function createCheckoutShippingAddress(
+  previousState: CheckoutShippingAddressState,
+  formData: FormData,
+): Promise<CheckoutShippingAddressState> {
+  const { isAuthenticated, userId } = await auth();
+
+  if (!isAuthenticated || !userId) {
+    return shippingAddressErrorState(
+      previousState,
+      'Inicia sesion para guardar una direccion.',
+    );
+  }
+
+  const result = checkoutShippingAddressSchema.safeParse({
+    label: formData.get('label'),
+    address: formData.get('address'),
+    apartment: formData.get('apartment'),
+    floor: formData.get('floor'),
+    city: formData.get('city'),
+    postalCode: formData.get('postalCode'),
+    province: formData.get('province'),
+    country: formData.get('country'),
+  });
+
+  if (!result.success) {
+    return shippingAddressErrorState(
+      previousState,
+      'Revisa los campos marcados para guardar la direccion.',
+      result.error.flatten().fieldErrors,
+    );
+  }
+
+  const buyer = await prisma.buyerProfile.findUnique({
+    where: { clerk_user_id: userId },
+    select: {
+      id: true,
+      first_name: true,
+      last_name: true,
+      phone: true,
+    },
+  });
+
+  if (
+    !buyer?.first_name?.trim() ||
+    !buyer.last_name?.trim() ||
+    !buyer.phone?.trim()
+  ) {
+    return shippingAddressErrorState(
+      previousState,
+      'Guarda primero tus datos de contacto.',
+    );
+  }
+
+  const address = await prisma.shippingAddress.create({
+    data: {
+      buyer_id: buyer.id,
+      label: result.data.label ?? null,
+      address: result.data.address,
+      apartment: result.data.apartment ?? null,
+      floor: result.data.floor ?? null,
+      city: result.data.city,
+      postal_code: result.data.postalCode,
+      province: result.data.province,
+      country: result.data.country,
+    },
+    select: { id: true },
+  });
+
+  revalidateCheckoutPaths();
+  redirect(`/checkout/review?addressId=${address.id}`);
+}
+
+export async function updateCheckoutShippingAddress(
+  previousState: CheckoutShippingAddressState,
+  formData: FormData,
+): Promise<CheckoutShippingAddressState> {
+  const { isAuthenticated, userId } = await auth();
+
+  if (!isAuthenticated || !userId) {
+    return shippingAddressErrorState(
+      previousState,
+      'Inicia sesion para editar la direccion.',
+    );
+  }
+
+  const addressResult = checkoutAddressSelectionSchema.safeParse({
+    addressId: formData.get('addressId'),
+  });
+
+  if (!addressResult.success) {
+    return shippingAddressErrorState(
+      previousState,
+      'No pudimos encontrar la direccion para editar.',
+    );
+  }
+
+  const result = checkoutShippingAddressSchema.safeParse({
+    label: formData.get('label'),
+    address: formData.get('address'),
+    apartment: formData.get('apartment'),
+    floor: formData.get('floor'),
+    city: formData.get('city'),
+    postalCode: formData.get('postalCode'),
+    province: formData.get('province'),
+    country: formData.get('country'),
+  });
+
+  if (!result.success) {
+    return shippingAddressErrorState(
+      previousState,
+      'Revisa los campos marcados para guardar los cambios.',
+      result.error.flatten().fieldErrors,
+    );
+  }
+
+  const updateResult = await prisma.shippingAddress.updateMany({
+    where: {
+      id: addressResult.data.addressId,
+      buyer: {
+        clerk_user_id: userId,
+      },
+    },
+    data: {
+      label: result.data.label ?? null,
+      address: result.data.address,
+      apartment: result.data.apartment ?? null,
+      floor: result.data.floor ?? null,
+      city: result.data.city,
+      postal_code: result.data.postalCode,
+      province: result.data.province,
+      country: result.data.country,
+    },
+  });
+
+  if (updateResult.count === 0) {
+    return shippingAddressErrorState(
+      previousState,
+      'No pudimos encontrar esa direccion en tu cuenta.',
+    );
+  }
+
+  revalidateCheckoutPaths();
+  redirect('/checkout');
+}
+
 export async function confirmCheckoutPendingOrders(
-  shippingDetails: CheckoutShippingDetails,
+  addressId: string,
 ): Promise<ConfirmCheckoutResult> {
   const { isAuthenticated, userId } = await auth();
 
@@ -45,12 +259,24 @@ export async function confirmCheckoutPendingOrders(
     };
   }
 
-  const shippingResult = checkoutShippingSchema.safeParse(shippingDetails);
+  const addressResult = checkoutAddressSelectionSchema.safeParse({ addressId });
 
-  if (!shippingResult.success) {
+  if (!addressResult.success) {
     return {
       success: false,
-      message: 'Revisa los datos de envio antes de confirmar.',
+      message: 'Selecciona una direccion de envio antes de confirmar.',
+    };
+  }
+
+  const shipping = await getCheckoutShippingSelection(
+    userId,
+    addressResult.data.addressId,
+  );
+
+  if (!shipping) {
+    return {
+      success: false,
+      message: 'Revisa tus datos de envio antes de confirmar.',
     };
   }
 
@@ -74,7 +300,6 @@ export async function confirmCheckoutPendingOrders(
     };
   }
 
-  const shipping = shippingResult.data;
   const reservationItems = cart.items.map((item) => ({
     productId: item.productId,
     quantity: item.quantity,
@@ -98,13 +323,13 @@ export async function confirmCheckoutPendingOrders(
       buyerId: userId,
       reservationIds,
       status: 'PENDING',
-      shippingName: shipping.firstName,
-      shippingLastName: shipping.lastName,
-      shippingAddress: formatShippingAddress(shipping),
-      shippingCity: shipping.city,
-      shippingProvince: shipping.province,
-      shippingZip: shipping.postalCode,
-      shippingPhone: shipping.phone,
+      shippingName: shipping.profile.firstName,
+      shippingLastName: shipping.profile.lastName,
+      shippingAddress: formatShippingAddress(shipping.address),
+      shippingCity: shipping.address.city,
+      shippingProvince: shipping.address.province,
+      shippingZip: shipping.address.postalCode,
+      shippingPhone: shipping.profile.phone,
     });
 
     const paymentOrders = buildPaymentsOrders(createdOrders.orders, cart.items);
@@ -174,16 +399,6 @@ function roundMoney(amount: number) {
   return Math.round(amount * 100) / 100;
 }
 
-function formatShippingAddress(details: CheckoutShippingDetails) {
-  return [
-    details.address,
-    details.apartment ? `Depto ${details.apartment}` : null,
-    details.floor ? `Piso ${details.floor}` : null,
-  ]
-    .filter(Boolean)
-    .join(', ');
-}
-
 function getCheckoutErrorMessage(error: unknown) {
   if (error instanceof SellerApiError) {
     return error.message;
@@ -198,6 +413,32 @@ function getCheckoutErrorMessage(error: unknown) {
   }
 
   return 'No pudimos confirmar el pedido. Intentalo nuevamente.';
+}
+
+function buyerProfileErrorState(
+  previousState: CheckoutBuyerProfileState,
+  message: string,
+  fieldErrors: CheckoutBuyerProfileState['fieldErrors'] = {},
+): CheckoutBuyerProfileState {
+  return {
+    status: 'error',
+    submissionId: previousState.submissionId + 1,
+    message,
+    fieldErrors,
+  };
+}
+
+function shippingAddressErrorState(
+  previousState: CheckoutShippingAddressState,
+  message: string,
+  fieldErrors: CheckoutShippingAddressState['fieldErrors'] = {},
+): CheckoutShippingAddressState {
+  return {
+    status: 'error',
+    submissionId: previousState.submissionId + 1,
+    message,
+    fieldErrors,
+  };
 }
 
 function revalidateCheckoutPaths() {

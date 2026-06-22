@@ -4,12 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useCart } from '@/features/cart/components/cart-provider';
 import { confirmCheckoutPendingOrders } from '@/features/checkout/actions/checkout';
-import {
-  CHECKOUT_SHIPPING_STORAGE_KEY,
-  checkoutShippingSchema,
-} from '@/features/checkout/schema';
 
-export function PaymentActions() {
+export function PaymentActions({ addressId }: { addressId: string }) {
   const router = useRouter();
   const { dispatchCart } = useCart();
   const [error, setError] = useState<string | null>(null);
@@ -21,24 +17,14 @@ export function PaymentActions() {
     setError(null);
 
     startTransition(async () => {
-      const shippingDetails = readStoredShippingDetails();
-
-      if (!shippingDetails) {
-        setError(
-          'Necesitamos tus datos de envio antes de confirmar el pedido.',
-        );
-        return;
-      }
-
       try {
-        const result = await confirmCheckoutPendingOrders(shippingDetails);
+        const result = await confirmCheckoutPendingOrders(addressId);
 
         if (!result.success) {
           setError(result.message);
           return;
         }
 
-        sessionStorage.removeItem(CHECKOUT_SHIPPING_STORAGE_KEY);
         dispatchCart({ type: 'set', quantity: 0 });
         setIsRedirecting(true);
         window.location.assign(result.paymentUrl);
@@ -52,7 +38,7 @@ export function PaymentActions() {
   }
 
   function returnToReview() {
-    router.push('/checkout/review');
+    router.push(`/checkout/review?addressId=${addressId}`);
   }
 
   return (
@@ -82,21 +68,4 @@ export function PaymentActions() {
       </div>
     </div>
   );
-}
-
-function readStoredShippingDetails() {
-  const storedDetails = sessionStorage.getItem(CHECKOUT_SHIPPING_STORAGE_KEY);
-
-  if (!storedDetails) {
-    return null;
-  }
-
-  try {
-    const result = checkoutShippingSchema.safeParse(JSON.parse(storedDetails));
-
-    return result.success ? result.data : null;
-  } catch {
-    sessionStorage.removeItem(CHECKOUT_SHIPPING_STORAGE_KEY);
-    return null;
-  }
 }
