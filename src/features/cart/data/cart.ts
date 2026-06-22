@@ -88,7 +88,7 @@ export async function addProductToCart(clerkUserId: string, productId: string) {
     throw new Error('Not enough stock available');
   }
 
-  return prisma.cartItem.upsert({
+  const item = await prisma.cartItem.upsert({
     where: {
       cart_id_product_id: {
         cart_id: cart.id,
@@ -106,6 +106,10 @@ export async function addProductToCart(clerkUserId: string, productId: string) {
       },
     },
   });
+
+  await touchCart(cart.id);
+
+  return item;
 }
 
 export async function incrementCartProduct(
@@ -125,7 +129,7 @@ export async function decrementCartProduct(
     return;
   }
 
-  await prisma.cartItem.updateMany({
+  const result = await prisma.cartItem.updateMany({
     where: {
       cart_id: cart.id,
       product_id: productId,
@@ -139,6 +143,10 @@ export async function decrementCartProduct(
       },
     },
   });
+
+  if (result.count > 0) {
+    await touchCart(cart.id);
+  }
 }
 
 export async function removeCartProduct(
@@ -151,12 +159,16 @@ export async function removeCartProduct(
     return;
   }
 
-  await prisma.cartItem.deleteMany({
+  const result = await prisma.cartItem.deleteMany({
     where: {
       cart_id: cart.id,
       product_id: productId,
     },
   });
+
+  if (result.count > 0) {
+    await touchCart(cart.id);
+  }
 }
 
 export async function clearCartForUser(clerkUserId: string) {
@@ -166,11 +178,15 @@ export async function clearCartForUser(clerkUserId: string) {
     return;
   }
 
-  await prisma.cartItem.deleteMany({
+  const result = await prisma.cartItem.deleteMany({
     where: {
       cart_id: cart.id,
     },
   });
+
+  if (result.count > 0) {
+    await touchCart(cart.id);
+  }
 }
 
 async function getOrCreateCartForUser(clerkUserId: string) {
@@ -195,6 +211,13 @@ async function getExistingCartForUser(clerkUserId: string) {
       },
     },
     select: { id: true },
+  });
+}
+
+async function touchCart(cartId: string) {
+  await prisma.cart.update({
+    where: { id: cartId },
+    data: { updated_at: new Date() },
   });
 }
 
