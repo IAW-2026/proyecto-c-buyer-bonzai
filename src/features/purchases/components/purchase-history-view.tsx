@@ -79,7 +79,6 @@ export async function PurchaseHistoryView({
                 </div>
                 <RefundRequestButton
                   purchaseId={purchase.purchaseId}
-                  disabled
                 />
               </div>
             </div>

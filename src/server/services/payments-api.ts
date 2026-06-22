@@ -15,6 +15,15 @@ const checkoutResponseSchema = z
   })
   .passthrough();
 
+const disputeResponseSchema = z
+  .object({
+    success: z.boolean(),
+    transactionId: z.string(),
+    newStatus: z.string(),
+    message: z.string().optional(),
+  })
+  .passthrough();
+
 export type PaymentsCheckoutOrder = {
   sellerId: string;
   amount: number;
@@ -25,6 +34,11 @@ export type PaymentsCheckoutPayload = {
   buyerId: string;
   buyerEmail?: string;
   orders: PaymentsCheckoutOrder[];
+};
+
+export type PaymentsDisputePayload = {
+  reason: string;
+  description: string;
 };
 
 export class PaymentsApiError extends Error {
@@ -55,6 +69,29 @@ export async function createPaymentsCheckout(body: PaymentsCheckoutPayload) {
     transactionId: result.transactionId,
     paymentUrl: result.sandboxUrl,
     status: result.status,
+  };
+}
+
+export async function createPaymentDispute({
+  orderId,
+  reason,
+  description,
+}: PaymentsDisputePayload & { orderId: string }) {
+  const payload = await paymentsFetch(
+    `/api/payments/${encodeURIComponent(orderId)}/dispute`,
+    {
+      body: { reason, description },
+    },
+  );
+  const result = disputeResponseSchema.parse(payload);
+
+  if (!result.success) {
+    throw new PaymentsApiError('Payments no pudo abrir la disputa.');
+  }
+
+  return {
+    transactionId: result.transactionId,
+    newStatus: result.newStatus,
   };
 }
 
