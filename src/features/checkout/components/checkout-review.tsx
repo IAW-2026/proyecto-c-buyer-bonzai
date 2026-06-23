@@ -21,13 +21,13 @@ export function CheckoutReview({ cart, shipping }: CheckoutReviewProps) {
         aria-labelledby="shipping-review-title"
       >
         <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
-          Direccion de entrega
+          Delivery address
         </p>
         <h2
           id="shipping-review-title"
           className="mt-4 font-headline text-4xl leading-none tracking-[-0.04em] text-primary"
         >
-          Revisa los datos antes de pagar.
+          Review the information before paying.
         </h2>
 
         <dl className="mt-8 grid gap-5 sm:grid-cols-2">

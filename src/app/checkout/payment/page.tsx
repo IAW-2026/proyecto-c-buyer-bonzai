@@ -34,8 +34,8 @@ export default async function CheckoutPaymentPage({
             Reserva y orden
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-secondary md:text-base">
-            Al continuar, Bonzai reserva el stock, crea tus ordenes pendientes
-            y prepara el link seguro de Mercado Pago.
+            Al continuar, Bonzai reserva el stock, crea tus ordenes pendientes y
+            prepara el link seguro de Mercado Pago.
           </p>
         </header>
 
@@ -64,10 +64,13 @@ async function CheckoutPaymentContent({
 
   if (cart.items.length === 0) {
     return (
-      <section className="bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary" role="alert">
-        Tu carrito esta vacio. No hay un pago para procesar.
+      <section
+        className="bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary"
+        role="alert"
+      >
+        Your cart is empty. There is no payment to process.
         <Link className="ml-2 underline underline-offset-4" href="/shop">
-          Ir a la tienda
+          Go to the shop
         </Link>
       </section>
     );
@@ -81,7 +84,10 @@ async function CheckoutPaymentContent({
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
-      <section className="bg-surface-container-lowest p-6 sm:p-8" aria-labelledby="payment-checkout-title">
+      <section
+        className="bg-surface-container-lowest p-6 sm:p-8"
+        aria-labelledby="payment-checkout-title"
+      >
         <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
           Ultimo paso
         </p>
@@ -101,7 +107,7 @@ async function CheckoutPaymentContent({
           href={reviewHref}
           className="mt-6 inline-flex text-sm font-medium text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Volver a revisar el pedido
+          Back to order review
         </Link>
       </section>
 

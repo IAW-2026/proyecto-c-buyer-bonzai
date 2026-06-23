@@ -93,20 +93,18 @@ function BuyerProfileForm({ profile }: { profile: CheckoutBuyerProfile }) {
         description="Nombre, apellido y telefono quedan guardados en tu perfil de Bonzai. Las direcciones se administran aparte para que puedas tener varias opciones de envio."
       />
 
-      {state.status === 'error' ? (
-        <FormError message={state.message} />
-      ) : null}
+      {state.status === 'error' ? <FormError message={state.message} /> : null}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
-          label="Nombre"
+          label="First name"
           name="firstName"
           defaultValue={profile.firstName}
           error={state.fieldErrors.firstName?.[0]}
           autoComplete="given-name"
         />
         <TextField
-          label="Apellido"
+          label="Last name"
           name="lastName"
           defaultValue={profile.lastName}
           error={state.fieldErrors.lastName?.[0]}
@@ -129,7 +127,11 @@ function BuyerProfileForm({ profile }: { profile: CheckoutBuyerProfile }) {
   );
 }
 
-function AddressSelector({ addresses }: { addresses: CheckoutShippingAddress[] }) {
+function AddressSelector({
+  addresses,
+}: {
+  addresses: CheckoutShippingAddress[];
+}) {
   const selectionFormId = 'checkout-address-selection';
 
   return (
@@ -188,7 +190,9 @@ function AddressSelector({ addresses }: { addresses: CheckoutShippingAddress[] }
       </div>
 
       <form id={selectionFormId} action="/checkout/review" method="get">
-        <PrimaryButton pendingLabel="Continuando...">Revisar pedido</PrimaryButton>
+        <PrimaryButton pendingLabel="Continuando...">
+          Revisar pedido
+        </PrimaryButton>
       </form>
     </div>
   );
@@ -202,9 +206,7 @@ function ShippingAddressForm({ submitLabel }: { submitLabel: string }) {
 
   return (
     <form action={formAction} className="space-y-6" noValidate>
-      {state.status === 'error' ? (
-        <FormError message={state.message} />
-      ) : null}
+      {state.status === 'error' ? <FormError message={state.message} /> : null}
 
       <ShippingAddressFields state={state} />
 
@@ -229,9 +231,7 @@ function EditShippingAddressForm({
     <form action={formAction} className="space-y-6" noValidate>
       <input type="hidden" name="addressId" value={address.id} />
 
-      {state.status === 'error' ? (
-        <FormError message={state.message} />
-      ) : null}
+      {state.status === 'error' ? <FormError message={state.message} /> : null}
 
       <ShippingAddressFields address={address} state={state} />
 
@@ -375,7 +375,7 @@ function TextField({
       >
         <span>{label}</span>
         {optional ? (
-          <span className="normal-case tracking-normal">Opcional</span>
+          <span className="normal-case tracking-normal">Optional</span>
         ) : null}
       </label>
       <input

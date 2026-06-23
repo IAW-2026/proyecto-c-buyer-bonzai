@@ -27,13 +27,14 @@ export default async function CheckoutReviewPage({
       <div className="mx-auto max-w-360">
         <header className="mb-10 max-w-3xl">
           <p className="mb-4 font-label text-xs uppercase tracking-[0.18em] text-secondary">
-            Revision final
+            Final review
           </p>
           <h1 className="font-headline text-5xl leading-none tracking-[-0.04em] text-primary md:text-6xl">
-            Detalles del pedido
+            Order details
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-secondary md:text-base">
-            Confirma la direccion y el resumen antes de crear tu pedido pendiente.
+            Confirma la direccion y el resumen antes de crear tu pedido
+            pendiente.
           </p>
         </header>
 
@@ -62,10 +63,13 @@ async function CheckoutReviewContent({
 
   if (cart.items.length === 0) {
     return (
-      <section className="bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary" role="alert">
-        Tu carrito esta vacio. No hay un pedido para revisar.
+      <section
+        className="bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary"
+        role="alert"
+      >
+        Your cart is empty. There is no order to review.
         <Link className="ml-2 underline underline-offset-4" href="/shop">
-          Ir a la tienda
+          Go to the shop
         </Link>
       </section>
     );

@@ -30,9 +30,7 @@ export function PaymentActions({ addressId }: { addressId: string }) {
         window.location.assign(result.paymentUrl);
       } catch {
         setIsRedirecting(false);
-        setError(
-          'No pudimos iniciar el pago. Intentalo nuevamente.',
-        );
+        setError('No pudimos iniciar el pago. Intentalo nuevamente.');
       }
     });
   }
@@ -44,7 +42,10 @@ export function PaymentActions({ addressId }: { addressId: string }) {
   return (
     <div className="mt-10">
       {error ? (
-        <p className="mb-4 text-sm font-medium leading-6 text-error" role="alert">
+        <p
+          className="mb-4 text-sm font-medium leading-6 text-error"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
