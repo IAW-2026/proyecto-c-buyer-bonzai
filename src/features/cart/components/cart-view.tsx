@@ -1,8 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useOptimistic, useTransition } from 'react';
+import { useOptimistic, useTransition } from 'react';
 import {
   decrementCartItemById,
   incrementCartItemById,
@@ -11,6 +10,7 @@ import {
 import type { CartLineItem, CartViewModel } from '../types';
 import { useCart } from './cart-provider';
 import { formatCurrency } from '@/lib/formatters';
+import { ProductImage } from '@/features/shop/components/product-image';
 
 type CartOptimisticAction =
   | { type: 'increment'; productId: string }
@@ -28,10 +28,6 @@ export function CartView({ cart }: CartViewProps) {
     cart,
     applyOptimisticCartAction,
   );
-
-  useEffect(() => {
-    dispatchCart({ type: 'set', quantity: cart.totalQuantity });
-  }, [cart.totalQuantity, dispatchCart]);
 
   function incrementItem(productId: string) {
     startTransition(async () => {
@@ -145,10 +141,9 @@ function CartItemRow({
         className="relative aspect-square cursor-pointer overflow-hidden bg-surface-container-highest"
         aria-label={`View ${item.product.name}`}
       >
-        <Image
-          src={item.product.image.src}
-          alt={item.product.image.alt}
-          fill
+        <ProductImage
+          imageUrl={item.product.imageUrl}
+          name={item.product.name}
           sizes="8rem"
           className="object-cover transition duration-500 hover:scale-105"
         />
@@ -156,9 +151,11 @@ function CartItemRow({
 
       <div className="flex min-w-0 flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
-          <p className="mb-2 font-label text-[11px] uppercase tracking-[0.18em] text-secondary">
-            {item.product.category}
-          </p>
+          {item.product.category ? (
+            <p className="mb-2 font-label text-[11px] uppercase tracking-[0.18em] text-secondary">
+              {item.product.category.name}
+            </p>
+          ) : null}
           <Link
             href={`/p/${item.productId}`}
             className="cursor-pointer font-headline text-2xl leading-tight text-primary transition hover:text-primary-container"
@@ -218,7 +215,8 @@ function QuantityControls({
         <button
           type="button"
           onClick={() => onIncrement(item.productId)}
-          className="flex size-10 cursor-pointer items-center justify-center text-primary transition hover:bg-surface-container-high focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+          disabled={item.quantity >= item.product.stock}
+          className="flex size-10 cursor-pointer items-center justify-center text-primary transition hover:bg-surface-container-high focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:text-outline"
           aria-label={`Increase ${item.product.name} quantity`}
         >
           <PlusIcon className="size-4" />

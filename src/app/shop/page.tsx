@@ -22,10 +22,16 @@ export default async function ShopQueryPage({
 }: ShopQueryPageProps) {
   const params = await searchParams;
   const query = getFirstParam(params.q)?.trim() ?? '';
-  const category = getFirstParam(params.category)?.trim() ?? '';
+  const categoryId = getFirstParam(params.category)?.trim() ?? '';
   const requestedPage = getPageParam(params.page);
-  const hasFilters = Boolean(query || category);
-  const productsPromise = searchProducts({ query, category });
+  const hasFilters = Boolean(query || categoryId);
+  const productsPromise = searchProducts({
+    query,
+    categoryId,
+    page: requestedPage,
+    limit: PRODUCTS_PER_PAGE,
+  });
+  const categoriesPromise = getProductCategories();
 
   return (
     <main className="bg-surface px-4 pb-24 pt-12 text-on-surface sm:px-6 lg:px-8">
@@ -41,8 +47,9 @@ export default async function ShopQueryPage({
           <Suspense fallback={<ShopSummarySkeleton />}>
             <ShopSummary
               productsPromise={productsPromise}
+              categoriesPromise={categoriesPromise}
               query={query}
-              category={category}
+              categoryId={categoryId}
             />
           </Suspense>
         </section>
@@ -50,8 +57,9 @@ export default async function ShopQueryPage({
         <Suspense fallback={<ShopContentSkeleton />}>
           <ShopContent
             productsPromise={productsPromise}
+            categoriesPromise={categoriesPromise}
             query={query}
-            category={category}
+            categoryId={categoryId}
             requestedPage={requestedPage}
           />
         </Suspense>
@@ -62,20 +70,29 @@ export default async function ShopQueryPage({
 
 async function ShopSummary({
   productsPromise,
+  categoriesPromise,
   query,
-  category,
+  categoryId,
 }: {
   productsPromise: ReturnType<typeof searchProducts>;
+  categoriesPromise: ReturnType<typeof getProductCategories>;
   query: string;
-  category: string;
+  categoryId: string;
 }) {
-  const products = await productsPromise;
-  const hasFilters = Boolean(query || category);
+  const [productsResult, categories] = await Promise.all([
+    productsPromise,
+    categoriesPromise,
+  ]);
+  const selectedCategory = categories.find(
+    (category) => category.id === categoryId,
+  );
+  const categoryName = selectedCategory?.name ?? categoryId;
+  const hasFilters = Boolean(query || categoryId);
 
   return (
     <p className="mt-4 max-w-2xl font-body text-sm leading-6 text-secondary sm:text-base sm:leading-7">
       {hasFilters
-        ? resultSummary({ count: products.length, query, category })
+        ? resultSummary({ count: productsResult.total, query, categoryName })
         : 'Explore curated plants, vessels, and care-led pieces selected for calm, architectural interiors.'}
     </p>
   );
@@ -92,40 +109,38 @@ function ShopSummarySkeleton() {
 
 async function ShopContent({
   productsPromise,
+  categoriesPromise,
   query,
-  category,
+  categoryId,
   requestedPage,
 }: {
   productsPromise: ReturnType<typeof searchProducts>;
+  categoriesPromise: ReturnType<typeof getProductCategories>;
   query: string;
-  category: string;
+  categoryId: string;
   requestedPage: number;
 }) {
-  const [products, categories] = await Promise.all([
+  const [productsResult, categories] = await Promise.all([
     productsPromise,
-    getProductCategories(),
+    categoriesPromise,
   ]);
-  const pageCount = Math.ceil(products.length / PRODUCTS_PER_PAGE);
+  const pageCount = Math.ceil(productsResult.total / productsResult.limit);
   const totalPages = Math.max(pageCount, 1);
-  const currentPage = clampPage(requestedPage, totalPages);
-  const paginatedProducts = products.slice(
-    (currentPage - 1) * PRODUCTS_PER_PAGE,
-    currentPage * PRODUCTS_PER_PAGE,
-  );
+  const currentPage = clampPage(productsResult.page || requestedPage, totalPages);
   const shouldShowPagination = pageCount > 1;
 
   return (
     <>
-      <ShopCategoryFilters categories={categories} selectedCategory={category} />
+      <ShopCategoryFilters categories={categories} selectedCategoryId={categoryId} />
 
-      <ShopResults products={paginatedProducts} />
+      <ShopResults products={productsResult.products} />
 
       {shouldShowPagination ? (
         <ShopPagination
           currentPage={currentPage}
           totalPages={pageCount}
           query={query}
-          category={category}
+          category={categoryId}
         />
       ) : null}
     </>
@@ -149,7 +164,7 @@ function ShopContentSkeleton() {
         {Array.from({ length: 6 }, (_, index) => (
           <article key={index} className="bg-surface-container-lowest p-4 sm:p-6 md:col-span-4">
             <div className="mb-6 aspect-4/5 animate-pulse bg-surface-container-highest" />
-            <div className="mb-3 h-5 w-24 rounded-full bg-secondary-container/60" />
+            <div className="mb-3 h-3 w-24 bg-surface-container" />
             <div className="h-8 w-3/4 bg-surface-container-high" />
             <div className="mt-4 space-y-2">
               <div className="h-4 w-full bg-surface-container" />
@@ -180,21 +195,21 @@ function clampPage(page: number, totalPages: number) {
 function resultSummary({
   count,
   query,
-  category,
+  categoryName,
 }: {
   count: number;
   query: string;
-  category: string;
+  categoryName: string;
 }) {
   const resultLabel = count === 1 ? 'piece' : 'pieces';
 
-  if (query && category) {
-    return `${count} ${resultLabel} found for "${query}" in ${category}.`;
+  if (query && categoryName) {
+    return `${count} ${resultLabel} found for "${query}" in ${categoryName}.`;
   }
 
   if (query) {
     return `${count} ${resultLabel} found for "${query}".`;
   }
 
-  return `${count} ${resultLabel} found in ${category}.`;
+  return `${count} ${resultLabel} found in ${categoryName}.`;
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
@@ -9,10 +8,6 @@ type ErrorPageProps = {
 };
 
 export default function ErrorPage({ error, unstable_retry }: ErrorPageProps) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
   return (
     <main className="relative isolate overflow-hidden bg-surface px-4 py-16 text-on-surface sm:px-6 sm:py-20 lg:px-8 lg:py-28">
       <div

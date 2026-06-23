@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
+import type { ProductCategory } from '@/features/shop/types';
 
 type CategoryMenuProps = {
-  categories: string[];
+  categories: ProductCategory[];
 };
 
 export function CategoryMenu({ categories }: CategoryMenuProps) {
@@ -75,12 +76,12 @@ function CategoryMenuContent({ categories }: CategoryMenuProps) {
         >
           {categories.map((category) => (
             <Link
-              key={category}
-              href={`/shop?category=${encodeURIComponent(category)}`}
+              key={category.id}
+              href={`/shop?category=${encodeURIComponent(category.id)}`}
               className="block rounded-xl px-3 py-2 font-body text-sm text-primary transition hover:bg-surface-container-low focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
               onClick={() => setIsOpen(false)}
             >
-              {category}
+              {category.name}
             </Link>
           ))}
         </div>

@@ -1,10 +1,11 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import Link from 'next/link';
 import { getCartForUser } from '@/features/cart/data/cart';
 import { SignedOutCartPage } from '@/features/cart/components/signed-out-cart-page';
 import { CheckoutForm } from '@/features/checkout/components/checkout-form';
 import { OrderSummary } from '@/features/checkout/components/order-summary';
 import { CheckoutFlowSkeleton } from '@/features/checkout/components/checkout-flow-skeleton';
+import { getCheckoutShippingData } from '@/features/checkout/data/shipping';
 import { Suspense } from 'react';
 
 export default async function CheckoutPage() {
@@ -13,6 +14,8 @@ export default async function CheckoutPage() {
   if (!isAuthenticated || !userId) {
     return <SignedOutCartPage />;
   }
+
+  const user = await currentUser();
 
   return (
     <main className="min-h-screen bg-surface px-4 py-12 text-on-surface sm:px-6 lg:px-8">
@@ -31,15 +34,30 @@ export default async function CheckoutPage() {
         </header>
 
         <Suspense fallback={<CheckoutFlowSkeleton />}>
-          <CheckoutContent userId={userId} />
+          <CheckoutContent
+            userId={userId}
+            profileDefaults={{
+              firstName: user?.firstName,
+              lastName: user?.lastName,
+            }}
+          />
         </Suspense>
       </div>
     </main>
   );
 }
 
-async function CheckoutContent({ userId }: { userId: string }) {
-  const cart = await getCartForUser(userId);
+async function CheckoutContent({
+  userId,
+  profileDefaults,
+}: {
+  userId: string;
+  profileDefaults: { firstName?: string | null; lastName?: string | null };
+}) {
+  const [cart, shippingData] = await Promise.all([
+    getCartForUser(userId),
+    getCheckoutShippingData(userId, profileDefaults),
+  ]);
   const isCartEmpty = cart.items.length === 0;
 
   return (
@@ -63,7 +81,10 @@ async function CheckoutContent({ userId }: { userId: string }) {
             <h2 id="shipping-form-title" className="sr-only">
               Shipping information
             </h2>
-            <CheckoutForm isCartEmpty={isCartEmpty} />
+            <CheckoutForm
+              profile={shippingData.profile}
+              addresses={shippingData.addresses}
+            />
           </section>
 
           <OrderSummary cart={cart} />

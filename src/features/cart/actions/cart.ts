@@ -16,7 +16,7 @@ export type AddCartItemState = {
   submissionId: number;
 };
 
-export async function addCartItem(formData: FormData) {
+async function addCartItem(formData: FormData) {
   const userId = await requireUserId();
   const productId = readProductId(formData);
 

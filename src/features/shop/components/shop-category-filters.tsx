@@ -1,28 +1,29 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import type { ProductCategory } from '../types';
 
 type ShopCategoryFiltersProps = {
-  categories: string[];
-  selectedCategory: string;
+  categories: ProductCategory[];
+  selectedCategoryId: string;
 };
 
 export function ShopCategoryFilters({
   categories,
-  selectedCategory,
+  selectedCategoryId,
 }: ShopCategoryFiltersProps) {
   return (
     <div className="mb-10 flex flex-wrap gap-2" aria-label="Category filters">
-      <CategoryFilterLink href="/shop" isActive={!selectedCategory}>
+      <CategoryFilterLink href="/shop" isActive={!selectedCategoryId}>
         All
       </CategoryFilterLink>
 
       {categories.map((category) => (
         <CategoryFilterLink
-          key={category}
-          href={`/shop?category=${encodeURIComponent(category)}`}
-          isActive={selectedCategory === category}
+          key={category.id}
+          href={`/shop?category=${encodeURIComponent(category.id)}`}
+          isActive={selectedCategoryId === category.id}
         >
-          {category}
+          {category.name}
         </CategoryFilterLink>
       ))}
     </div>

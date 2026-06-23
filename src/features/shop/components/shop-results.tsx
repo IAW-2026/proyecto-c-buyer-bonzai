@@ -11,7 +11,7 @@ export function ShopResults({ products }: ShopResultsProps) {
       <section className="bg-surface-container-low px-6 py-16 text-center">
         <h2 className="font-headline text-3xl text-primary">No matches found</h2>
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-secondary">
-          Try a broader plant name, category, or care note to keep exploring.
+          Try a broader plant name or category to keep exploring.
         </p>
       </section>
     );

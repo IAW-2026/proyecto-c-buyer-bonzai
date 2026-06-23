@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
-import { ProductCard, ProductTags } from '@/features/shop/components/product-card';
+import { ProductCard } from '@/features/shop/components/product-card';
+import { ProductImage } from '@/features/shop/components/product-image';
 import {
   getProductAiDescription,
   getProductById,
@@ -23,8 +23,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const productTags = Array.from(new Set([product.category, ...product.tags]));
-
   return (
     <main className="bg-surface px-4 pb-24 pt-10 text-on-surface sm:px-6 lg:px-8">
       <article className="mx-auto grid max-w-360 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(26rem,0.72fr)] lg:items-start xl:gap-16">
@@ -38,13 +36,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <figure className="relative overflow-hidden bg-surface-container-highest">
             <div className="relative aspect-4/5">
-              <Image
-                src={product.image.src}
-                alt={product.image.alt}
-                fill
+              <ProductImage
+                imageUrl={product.imageUrl}
+                name={product.name}
                 priority
                 sizes="(min-width: 1024px) 52vw, 100vw"
-                className="object-cover"
               />
             </div>
             <figcaption className="absolute bottom-4 left-4 right-4 bg-surface/88 p-4 text-primary shadow-[0_20px_45px_rgba(27,28,26,0.08)] backdrop-blur-md sm:bottom-6 sm:left-6 sm:right-auto sm:max-w-xs">
@@ -62,14 +58,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <p className="mb-4 font-label text-xs uppercase tracking-[0.22em] text-secondary">
             Marketplace selection
           </p>
-          <ProductTags tags={productTags} />
 
           <h1 className="mt-5 font-headline text-5xl leading-none tracking-[-0.04em] text-primary sm:text-6xl xl:text-7xl">
             {product.name}
           </h1>
-          <p className="mt-6 max-w-xl font-body text-base leading-8 text-secondary">
-            {product.description}
-          </p>
+          {product.description ? (
+            <p className="mt-6 max-w-xl font-body text-base leading-8 text-secondary">
+              {product.description}
+            </p>
+          ) : null}
 
           <div className="mt-10 border border-outline-variant/70 bg-surface p-5 sm:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -82,17 +79,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </p>
               </div>
 
-              <AddToCartButton
-                productId={product.id}
-                className="inline-flex cursor-pointer justify-center rounded-sm bg-primary px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
-              />
+              {product.stock > 0 ? (
+                <AddToCartButton
+                  productId={product.id}
+                  className="inline-flex cursor-pointer justify-center rounded-sm bg-primary px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+                />
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex cursor-not-allowed justify-center rounded-sm bg-surface-container-high px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-outline"
+                >
+                  Out of stock
+                </button>
+              )}
             </div>
           </div>
 
           <dl className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-            <ProductDetail label="Care profile" value={product.careLabel} />
-            <ProductDetail label="Collection" value={product.category} />
-            <ProductDetail label="Selection" value="Curated by Bonzai" />
+            {product.category ? (
+              <ProductDetail label="Category" value={product.category.name} />
+            ) : null}
+            <ProductDetail label="Stock" value={`${product.stock} available`} />
           </dl>
         </section>
       </article>

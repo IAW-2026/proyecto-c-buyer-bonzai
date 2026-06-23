@@ -10,14 +10,20 @@ const requiredString = (label: string) =>
     .min(1, { error: `${label} is required` });
 
 const optionalString = z.preprocess(
-  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  (value) =>
+    typeof value !== 'string' || value.trim() === '' ? undefined : value,
   z.string().trim().optional(),
 );
 
-export const checkoutShippingSchema = z.object({
-  firstName: requiredString('First name'),
-  lastName: requiredString('Last name'),
-  address: requiredString('The address'),
+export const checkoutBuyerProfileSchema = z.object({
+  firstName: requiredString('El nombre'),
+  lastName: requiredString('El apellido'),
+  phone: requiredString('El telefono'),
+});
+
+export const checkoutShippingAddressSchema = z.object({
+  label: optionalString,
+  address: requiredString('La direccion'),
   apartment: optionalString,
   floor: optionalString,
   city: requiredString('The city'),
@@ -28,6 +34,21 @@ export const checkoutShippingSchema = z.object({
   }),
 });
 
-export type CheckoutShippingDetails = z.infer<typeof checkoutShippingSchema>;
+export const checkoutAddressSelectionSchema = z.object({
+  addressId: z
+    .string({
+      error: (issue) =>
+        issue.input === undefined
+          ? 'Selecciona una direccion para continuar.'
+          : 'Selecciona una direccion valida.',
+    })
+    .trim()
+    .uuid({ error: 'Selecciona una direccion valida.' }),
+});
 
-export const CHECKOUT_SHIPPING_STORAGE_KEY = 'bonzai.checkout.shipping.v1';
+export type CheckoutBuyerProfileInput = z.infer<
+  typeof checkoutBuyerProfileSchema
+>;
+export type CheckoutShippingAddressInput = z.infer<
+  typeof checkoutShippingAddressSchema
+>;

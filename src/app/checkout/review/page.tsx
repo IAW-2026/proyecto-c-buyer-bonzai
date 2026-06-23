@@ -4,14 +4,23 @@ import { getCartForUser } from '@/features/cart/data/cart';
 import { SignedOutCartPage } from '@/features/cart/components/signed-out-cart-page';
 import { CheckoutReview } from '@/features/checkout/components/checkout-review';
 import { CheckoutFlowSkeleton } from '@/features/checkout/components/checkout-flow-skeleton';
+import { getCheckoutShippingSelection } from '@/features/checkout/data/shipping';
 import { Suspense } from 'react';
 
-export default async function CheckoutReviewPage() {
+type CheckoutReviewPageProps = {
+  searchParams: Promise<{ addressId?: string | string[] }>;
+};
+
+export default async function CheckoutReviewPage({
+  searchParams,
+}: CheckoutReviewPageProps) {
   const { isAuthenticated, userId } = await auth();
 
   if (!isAuthenticated || !userId) {
     return <SignedOutCartPage />;
   }
+
+  const { addressId } = await searchParams;
 
   return (
     <main className="min-h-screen bg-surface px-4 py-12 text-on-surface sm:px-6 lg:px-8">
@@ -24,24 +33,40 @@ export default async function CheckoutReviewPage() {
             Order details
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-secondary md:text-base">
-            Confirm the address and summary before proceeding to the simulated payment.
+            Confirma la direccion y el resumen antes de crear tu pedido
+            pendiente.
           </p>
         </header>
 
         <Suspense fallback={<CheckoutFlowSkeleton variant="review" />}>
-          <CheckoutReviewContent userId={userId} />
+          <CheckoutReviewContent
+            userId={userId}
+            addressId={readAddressId(addressId)}
+          />
         </Suspense>
       </div>
     </main>
   );
 }
 
-async function CheckoutReviewContent({ userId }: { userId: string }) {
-  const cart = await getCartForUser(userId);
+async function CheckoutReviewContent({
+  userId,
+  addressId,
+}: {
+  userId: string;
+  addressId: string | null;
+}) {
+  const [cart, shipping] = await Promise.all([
+    getCartForUser(userId),
+    getCheckoutShippingSelection(userId, addressId),
+  ]);
 
   if (cart.items.length === 0) {
     return (
-      <section className="bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary" role="alert">
+      <section
+        className="bg-tertiary-container px-5 py-4 text-sm font-medium text-tertiary"
+        role="alert"
+      >
         Your cart is empty. There is no order to review.
         <Link className="ml-2 underline underline-offset-4" href="/shop">
           Go to the shop
@@ -50,5 +75,40 @@ async function CheckoutReviewContent({ userId }: { userId: string }) {
     );
   }
 
-  return <CheckoutReview cart={cart} />;
+  if (!shipping) {
+    return <MissingShippingSelection />;
+  }
+
+  return <CheckoutReview cart={cart} shipping={shipping} />;
+}
+
+function MissingShippingSelection() {
+  return (
+    <section className="bg-surface-container-lowest p-8 sm:p-10" role="status">
+      <p className="font-label text-xs uppercase tracking-[0.18em] text-secondary">
+        Falta la direccion
+      </p>
+      <h2 className="mt-4 font-headline text-4xl leading-none tracking-[-0.04em] text-primary">
+        Necesitamos una direccion guardada.
+      </h2>
+      <p className="mt-5 max-w-xl text-sm leading-7 text-secondary">
+        Volve al checkout y elegi una direccion de envio o crea una nueva antes
+        de revisar el pedido.
+      </p>
+      <Link
+        href="/checkout"
+        className="mt-8 inline-flex rounded-sm bg-[linear-gradient(135deg,#03271a,#1b3d2f)] px-8 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:opacity-95 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary"
+      >
+        Elegir direccion
+      </Link>
+    </section>
+  );
+}
+
+function readAddressId(addressId: string | string[] | undefined) {
+  if (Array.isArray(addressId)) {
+    return addressId[0] ?? null;
+  }
+
+  return addressId ?? null;
 }

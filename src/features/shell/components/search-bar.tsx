@@ -74,7 +74,7 @@ function SearchBarInner({
     const params = new URLSearchParams();
 
     if (item.type === 'category') {
-      params.set('category', item.label);
+      params.set('category', item.id);
     } else {
       params.set('q', item.label);
     }
@@ -144,7 +144,7 @@ function SearchBarInner({
           id="site-search"
           name="q"
           type="search"
-          placeholder="Search plants, vessels, care notes"
+          placeholder="Search plants, vessels, categories"
           value={query}
           autoComplete="off"
           role="combobox"
