@@ -2,7 +2,13 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import {
+  getPaymentOrderStatus,
+  PaymentsApiError,
+  type PaymentOrderStatus,
+} from '@/server/services/payments-api';
+import {
   getBuyerPurchases,
+  type BuyerPurchaseOrder,
   type BuyerPurchaseOrderItem,
 } from '@/server/services/seller-api';
 import { RefundRequestButton } from './refund-request-button';
@@ -14,6 +20,11 @@ type PurchaseHistoryViewProps = {
 const SHIPPING_TRACKING_BASE_URL =
   'https://proyecto-c-shipping-bonzai.vercel.app/shipping';
 
+type OrderPaymentLookup = {
+  status: PaymentOrderStatus | null;
+  unavailable: boolean;
+};
+
 export async function PurchaseHistoryView({
   userId,
 }: PurchaseHistoryViewProps) {
@@ -22,6 +33,10 @@ export async function PurchaseHistoryView({
   if (purchases.length === 0) {
     return <EmptyPurchases />;
   }
+
+  const paymentStatusesByOrderId = await getPaymentStatusesByOrderId(
+    purchases.flatMap((purchase) => purchase.orders),
+  );
 
   return (
     <section className="space-y-8" aria-label="Purchase history">
@@ -59,16 +74,17 @@ export async function PurchaseHistoryView({
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-3" aria-label="Purchased products">
-                {items.map((item, index) => (
-                  <PurchasedProduct
-                    key={`${item.productId}-${index}`}
-                    item={item}
+              <div className="mt-8 grid gap-4" aria-label="Seller orders">
+                {purchase.orders.map((order) => (
+                  <PurchasedOrder
+                    key={order.orderId}
+                    order={order}
+                    paymentStatus={paymentStatusesByOrderId.get(order.orderId)}
                   />
                 ))}
               </div>
 
-              <div className="mt-8 flex flex-col gap-4 bg-surface-container p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
+              <div className="mt-8 bg-surface-container p-4 sm:p-5">
                 <div>
                   <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">
                     Purchase total
@@ -77,7 +93,6 @@ export async function PurchaseHistoryView({
                     {formatCurrency(purchaseTotal)}
                   </p>
                 </div>
-                <RefundRequestButton purchaseId={purchase.purchaseId} />
               </div>
             </div>
 
@@ -103,6 +118,28 @@ export async function PurchaseHistoryView({
       })}
     </section>
   );
+}
+
+async function getPaymentStatusesByOrderId(orders: BuyerPurchaseOrder[]) {
+  const entries = await Promise.all(
+    orders.map(async (order): Promise<[string, OrderPaymentLookup]> => {
+      try {
+        return [
+          order.orderId,
+          {
+            status: await getPaymentOrderStatus(order.orderId),
+            unavailable: false,
+          },
+        ];
+      } catch (error) {
+        logPaymentStatusError(order.orderId, error);
+
+        return [order.orderId, { status: null, unavailable: true }];
+      }
+    }),
+  );
+
+  return new Map(entries);
 }
 
 export function PurchaseHistorySkeleton() {
@@ -194,12 +231,143 @@ function PurchasedProduct({ item }: { item: BuyerPurchaseOrderItem }) {
   );
 }
 
+function PurchasedOrder({
+  order,
+  paymentStatus,
+}: {
+  order: BuyerPurchaseOrder;
+  paymentStatus?: OrderPaymentLookup;
+}) {
+  const refundAction = getRefundAction(paymentStatus);
+
+  return (
+    <section
+      className="grid gap-5 bg-surface-container-low p-4 sm:p-5"
+      aria-label={`Seller order ${order.orderId}`}
+    >
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0">
+          <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">
+            Seller order
+          </p>
+          <h3 className="mt-2 font-headline text-3xl leading-none tracking-[-0.03em] text-primary sm:text-4xl">
+            {formatCurrency(order.total)}
+          </h3>
+          <p className="mt-3 break-all font-label text-[10px] uppercase tracking-[0.16em] text-secondary">
+            {order.orderId}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2 md:justify-end">
+          <StatusPill label="Order" value={order.status} />
+          <StatusPill
+            label="Payment"
+            value={getPaymentStatusValue(paymentStatus)}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-3" aria-label="Purchased products in this order">
+        {order.items.map((item, index) => (
+          <PurchasedProduct key={`${item.productId}-${index}`} item={item} />
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-4 bg-surface-container p-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">
+            Order total
+          </p>
+          <p className="mt-1 font-headline text-3xl leading-none text-primary">
+            {formatCurrency(order.total)}
+          </p>
+          <p className="mt-2 break-all text-xs leading-5 text-secondary">
+            Seller: {order.sellerId}
+          </p>
+        </div>
+        <RefundRequestButton
+          orderId={order.orderId}
+          disabled={refundAction.disabled}
+          disabledLabel={refundAction.disabledLabel}
+          disabledMessage={refundAction.disabledMessage}
+        />
+      </div>
+    </section>
+  );
+}
+
 function StatusPill({ label, value }: { label: string; value: string }) {
   return (
     <span className="inline-flex bg-secondary-container px-3 py-2 font-label text-[10px] uppercase tracking-[0.16em] text-on-secondary-container">
       {label}: {formatStatus(value)}
     </span>
   );
+}
+
+function getRefundAction(paymentStatus?: OrderPaymentLookup): {
+  disabled: boolean;
+  disabledLabel?: string;
+  disabledMessage?: string;
+} {
+  const status = paymentStatus?.status?.status.toUpperCase();
+
+  if (!status || paymentStatus?.unavailable) {
+    return {
+      disabled: true,
+      disabledLabel: 'Status unavailable',
+      disabledMessage:
+        'We cannot verify the refund status right now. Try again later.',
+    };
+  }
+
+  if (status === 'DISPUTED') {
+    return {
+      disabled: true,
+      disabledLabel: 'Refund in review',
+      disabledMessage: 'This order already has a refund dispute in review.',
+    };
+  }
+
+  if (status === 'REFUNDED') {
+    return {
+      disabled: true,
+      disabledLabel: 'Refunded',
+      disabledMessage: 'This order was refunded.',
+    };
+  }
+
+  if (status === 'COMPLETED') {
+    return {
+      disabled: true,
+      disabledLabel: 'Refund closed',
+      disabledMessage:
+        'The dispute was closed or the seller payout was completed, so this order cannot be disputed again.',
+    };
+  }
+
+  return { disabled: false };
+}
+
+function getPaymentStatusValue(paymentStatus?: OrderPaymentLookup) {
+  if (!paymentStatus?.status || paymentStatus.unavailable) {
+    return 'UNAVAILABLE';
+  }
+
+  return paymentStatus.status.status;
+}
+
+function logPaymentStatusError(orderId: string, error: unknown) {
+  if (error instanceof PaymentsApiError) {
+    console.warn('Could not read payment status for order.', {
+      orderId,
+      status: error.status,
+      message: error.message,
+    });
+
+    return;
+  }
+
+  console.error('Unexpected payment status error.', { orderId, error });
 }
 
 function TrackingLinks({ trackingIds }: { trackingIds: string[] }) {

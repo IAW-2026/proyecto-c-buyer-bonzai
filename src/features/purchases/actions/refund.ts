@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { REFUND_REASON_VALUES } from '@/features/purchases/refund-reasons';
 import {
   createPaymentDispute,
+  getPaymentOrderStatus,
   PaymentsApiError,
 } from '@/server/services/payments-api';
 import {
@@ -14,10 +15,12 @@ import {
 } from '@/server/services/seller-api';
 
 const refundRequestSchema = z.object({
-  purchaseId: z.string().trim().min(1),
+  orderId: z.string().trim().min(1),
   reason: z.enum(REFUND_REASON_VALUES),
   description: z.string().trim().min(10).max(1000),
 });
+
+const BLOCKED_REFUND_STATUSES = new Set(['DISPUTED', 'REFUNDED', 'COMPLETED']);
 
 export type RefundRequestState = {
   status: 'idle' | 'success' | 'error';
@@ -38,7 +41,7 @@ export async function requestRefundDispute(
   }
 
   const parsed = refundRequestSchema.safeParse({
-    purchaseId: formData.get('purchaseId'),
+    orderId: formData.get('orderId'),
     reason: formData.get('reason'),
     description: formData.get('description'),
   });
@@ -52,44 +55,42 @@ export async function requestRefundDispute(
 
   try {
     const purchases = await getBuyerPurchases(userId);
-    const purchase = purchases.find(
-      ({ purchaseId }) => purchaseId === parsed.data.purchaseId,
-    );
+    const order = purchases
+      .flatMap((purchase) => purchase.orders)
+      .find(({ orderId }) => orderId === parsed.data.orderId);
 
-    if (!purchase) {
+    if (!order) {
       return errorState(
         previousState,
-        'We could not find this purchase in your account.',
+        'We could not find this order in your account.',
       );
     }
 
-    const orderIds = purchase.orders.map(({ orderId }) => orderId);
+    const currentPaymentStatus = await getPaymentOrderStatus(order.orderId);
 
-    if (orderIds.length === 0) {
+    const normalizedStatus = currentPaymentStatus.status.toUpperCase();
+
+    if (BLOCKED_REFUND_STATUSES.has(normalizedStatus)) {
       return errorState(
         previousState,
-        'We could not find orders for this purchase.',
+        getBlockedRefundMessage(normalizedStatus),
       );
     }
 
-    const results = await Promise.all(
-      orderIds.map((orderId) =>
-        createPaymentDispute({
-          orderId,
-          reason: parsed.data.reason,
-          description: parsed.data.description,
-        }),
-      ),
-    );
+    const result = await createPaymentDispute({
+      orderId: order.orderId,
+      reason: parsed.data.reason,
+      description: parsed.data.description,
+    });
 
     revalidatePath('/purchases');
 
     return {
       status: 'success',
       submissionId: previousState.submissionId + 1,
-      message: 'The transaction was disputed successfully.',
-      newStatus: results[0]?.newStatus ?? 'DISPUTED',
-      transactionId: results[0]?.transactionId,
+      message: 'The refund dispute was opened for this seller order.',
+      newStatus: result.newStatus,
+      transactionId: result.transactionId,
     };
   } catch (error) {
     if (!(error instanceof PaymentsApiError) && !(error instanceof SellerApiError)) {
@@ -101,6 +102,22 @@ export async function requestRefundDispute(
       'We could not open the dispute. Try again.',
     );
   }
+}
+
+function getBlockedRefundMessage(status: string) {
+  if (status === 'DISPUTED') {
+    return 'This order already has a refund dispute in review.';
+  }
+
+  if (status === 'REFUNDED') {
+    return 'This order was already refunded.';
+  }
+
+  if (status === 'COMPLETED') {
+    return 'This order can no longer be disputed because the dispute was closed or the seller payout was completed.';
+  }
+
+  return 'This order cannot be disputed right now.';
 }
 
 function errorState(

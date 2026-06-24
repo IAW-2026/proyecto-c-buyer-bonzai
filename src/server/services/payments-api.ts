@@ -24,6 +24,17 @@ const disputeResponseSchema = z
   })
   .passthrough();
 
+const paymentOrderStatusSchema = z
+  .object({
+    transactionId: z.string(),
+    orderRef: z.string(),
+    status: z.string(),
+    amount: z.number(),
+    currency: z.string(),
+    updatedAt: z.string(),
+  })
+  .passthrough();
+
 export type PaymentsCheckoutOrder = {
   sellerId: string;
   amount: number;
@@ -40,6 +51,8 @@ export type PaymentsDisputePayload = {
   reason: string;
   description: string;
 };
+
+export type PaymentOrderStatus = z.infer<typeof paymentOrderStatusSchema>;
 
 export class PaymentsApiError extends Error {
   constructor(
@@ -95,24 +108,41 @@ export async function createPaymentDispute({
   };
 }
 
+export async function getPaymentOrderStatus(
+  orderId: string,
+): Promise<PaymentOrderStatus> {
+  const payload = await paymentsFetch(
+    `/api/payments/orders/${encodeURIComponent(orderId)}/status`,
+    { method: 'GET' },
+  );
+
+  return paymentOrderStatusSchema.parse(payload);
+}
+
 async function paymentsFetch(
   path: string,
   {
+    method = 'POST',
     body,
   }: {
-    body: unknown;
+    method?: 'GET' | 'POST';
+    body?: unknown;
   },
 ) {
   const url = paymentsUrl(path);
-  const headers = new Headers({ 'Content-Type': 'application/json' });
+  const headers = new Headers();
   const apiKey = getPaymentsApiKey();
+
+  if (body !== undefined) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   headers.set(getPaymentsApiKeyHeader(), apiKey);
 
   const response = await fetch(url, {
-    method: 'POST',
+    method,
     headers,
-    body: JSON.stringify(body),
+    body: body === undefined ? undefined : JSON.stringify(body),
     cache: 'no-store',
   });
 
