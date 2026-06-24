@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import {
   getBuyerPurchases,
@@ -9,6 +10,9 @@ import { RefundRequestButton } from './refund-request-button';
 type PurchaseHistoryViewProps = {
   userId: string;
 };
+
+const SHIPPING_TRACKING_BASE_URL =
+  'https://proyecto-c-shipping-bonzai.vercel.app/shipping';
 
 export async function PurchaseHistoryView({
   userId,
@@ -29,10 +33,6 @@ export async function PurchaseHistoryView({
         );
         const trackingIds = purchase.orders.flatMap((order) =>
           order.trackingId ? [order.trackingId] : [],
-        );
-        const trackingStatus = getTrackingStatus(
-          trackingIds.length,
-          purchase.orders.length,
         );
 
         return (
@@ -77,26 +77,15 @@ export async function PurchaseHistoryView({
                     {formatCurrency(purchaseTotal)}
                   </p>
                 </div>
-                <RefundRequestButton
-                  purchaseId={purchase.purchaseId}
-                />
+                <RefundRequestButton purchaseId={purchase.purchaseId} />
               </div>
             </div>
 
             <aside className="bg-surface-container-lowest p-5 sm:p-6 lg:sticky lg:top-6">
-              <p className="font-label text-xs uppercase tracking-[0.2em] text-secondary">
-                Fulfillment
-              </p>
-              <p className="mt-3 font-headline text-3xl leading-none text-primary">
-                {trackingStatus}
-              </p>
-
-              <dl className="mt-7 space-y-5 text-sm leading-6">
+              <dl className="mt-2 space-y-5 text-sm leading-6">
                 <Detail
                   label="Tracking"
-                  value={
-                    trackingIds.length > 0 ? trackingIds.join(', ') : 'Pending'
-                  }
+                  value={<TrackingLinks trackingIds={trackingIds} />}
                 />
                 <Detail
                   label="Purchase created"
@@ -213,7 +202,29 @@ function StatusPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
+function TrackingLinks({ trackingIds }: { trackingIds: string[] }) {
+  if (trackingIds.length === 0) {
+    return 'Pending';
+  }
+
+  return (
+    <span className="flex flex-wrap gap-x-3 gap-y-1">
+      {trackingIds.map((trackingId) => (
+        <a
+          key={trackingId}
+          href={`${SHIPPING_TRACKING_BASE_URL}/${encodeURIComponent(trackingId)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-primary/30 underline-offset-4 transition hover:text-primary-container hover:decoration-primary-container focus-visible:outline focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
+          {trackingId}
+        </a>
+      ))}
+    </span>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
       <dt className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary">
@@ -249,16 +260,4 @@ function formatStatus(value: string) {
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
-}
-
-function getTrackingStatus(assignedTrackings: number, packageCount: number) {
-  if (assignedTrackings === 0) {
-    return 'Awaiting tracking';
-  }
-
-  if (assignedTrackings < packageCount) {
-    return 'Partially assigned';
-  }
-
-  return 'Tracking assigned';
 }
