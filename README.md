@@ -34,13 +34,3 @@ La plataforma permite a los usuarios navegar por un catálogo de productos, visu
 El diseño sigue una línea visual editorial de alta gama, con un enfoque centrado en las plantas, buscando transmitir calma, amplitud y una experiencia premium. La interfaz es data-driven, preparada para consumir productos desde una API externa en el futuro.
 
 Actualmente la aplicación funciona con datos estáticos y simula flujos de compra completos, sentando las bases para la integración con la aplicación Seller y el backend de productos. También utiliza inteligencia artificial para generar las descripciones de cada uno de los productos.
-
-## Notas para la corrección
-
-- No se implementó un panel de administración ni se exponen endpoints porque se identificó que no era necesario para la aplicación de comprador.
-- Los endpoints de productos no están conectados; el pago está simulado al final de la pasarela.
-- Los botones de "solicitar reembolso" no tienen lógica integrada aún.
-- Los productos y el historial de compras son datos estáticos.
-- A futuro se debe implementar debounce y un número mínimo de caracteres para consultar productos al endpoint de la Seller app.
-- No se controla stock ni productos suspendidos aún; depende de la conexión con el endpoint correspondiente.
-- Se utiliza `unstable_cache` para cachear la respuesta de la IA; se migrará a la nueva API `'use cache'` de Next.js en un futuro.
