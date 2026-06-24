@@ -14,12 +14,16 @@ const initialRefundRequestState: RefundRequestState = {
 
 type RefundRequestButtonProps = {
   disabled?: boolean;
-  purchaseId: string;
+  disabledLabel?: string;
+  disabledMessage?: string;
+  orderId: string;
 };
 
 export function RefundRequestButton({
   disabled = false,
-  purchaseId,
+  disabledLabel = 'Refund unavailable',
+  disabledMessage,
+  orderId,
 }: RefundRequestButtonProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const titleId = useId();
@@ -32,6 +36,11 @@ export function RefundRequestButton({
   );
   const requested = state.status === 'success';
   const isDisabled = disabled || requested;
+  const buttonLabel = requested
+    ? 'Refund requested'
+    : disabled
+      ? disabledLabel
+      : 'Request refund';
 
   useEffect(() => {
     if (state.status === 'success') {
@@ -56,9 +65,9 @@ export function RefundRequestButton({
         disabled={isDisabled}
         onClick={openDialog}
         className="inline-flex justify-center rounded-sm bg-primary px-7 py-3 font-label text-xs uppercase tracking-[0.16em] text-on-primary transition hover:bg-primary-container focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:bg-surface-container-high disabled:text-outline"
-        aria-label={`Request refund for ${purchaseId}`}
+        aria-label={`Request refund for order ${orderId}`}
       >
-        {requested ? 'Refund requested' : 'Request refund'}
+        {buttonLabel}
       </button>
 
       {state.status === 'success' ? (
@@ -67,6 +76,10 @@ export function RefundRequestButton({
           role="status"
         >
           {state.message} Status: {state.newStatus ?? 'DISPUTED'}.
+        </p>
+      ) : disabledMessage ? (
+        <p className="max-w-72 text-left text-xs leading-5 text-secondary sm:text-right">
+          {disabledMessage}
         </p>
       ) : null}
 
@@ -78,7 +91,7 @@ export function RefundRequestButton({
         className="w-[calc(100%-2rem)] max-w-xl bg-surface-container-lowest p-0 text-on-surface shadow-[0_24px_60px_rgb(27_28_25/0.16)] backdrop:bg-on-surface/30 backdrop:backdrop-blur-sm"
       >
         <form action={formAction} className="p-6 text-left sm:p-8">
-          <input type="hidden" name="purchaseId" value={purchaseId} />
+          <input type="hidden" name="orderId" value={orderId} />
           <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">
             Refund request
           </p>

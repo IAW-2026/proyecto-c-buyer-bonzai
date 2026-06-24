@@ -19,7 +19,7 @@ export function ProductCard({
       className={`group relative flex h-full cursor-pointer flex-col bg-surface-container-lowest p-4 sm:p-6 ${className}`}
     >
       <Link
-        href={`/p/${product.id}`}
+        href={`/${product.slug}/${product.id}`}
         className="absolute inset-0 z-10 cursor-pointer focus-visible:outline focus-visible:outline-offset-4 focus-visible:outline-primary"
       >
         <span className="sr-only">View {product.name}</span>
