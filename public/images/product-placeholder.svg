@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Bonzai product placeholder</title>
+  <desc id="desc">A minimal plant silhouette placeholder for products without an image.</desc>
+  <rect width="800" height="1000" fill="#eef0ea"/>
+  <path d="M400 742c-58 0-104-47-104-105h208c0 58-46 105-104 105Z" fill="#d7ddd2"/>
+  <path d="M401 632c-12-82-4-171 23-265" stroke="#294536" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <path d="M414 410c71-56 153-68 246-34-45 82-119 119-223 111" fill="#6f8c75"/>
+  <path d="M385 468c-84-10-148-54-192-133 96-24 174-2 234 66" fill="#89a185"/>
+  <path d="M407 332c-39-78-28-157 34-238 62 81 73 160 34 238" fill="#516d5b"/>
+  <path d="M259 662h282l-33 210H292l-33-210Z" fill="#c6b9a4"/>
+  <path d="M286 706h228" stroke="#aa9c86" stroke-width="12" stroke-linecap="round"/>
+  <text x="400" y="920" text-anchor="middle" font-family="serif" font-size="44" fill="#294536">Bonzai</text>
+</svg>
