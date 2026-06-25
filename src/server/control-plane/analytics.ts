@@ -48,6 +48,11 @@ export async function getBuyerOverview(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
+  const where = buyerCreatedAtWhere(range);
+
   const [
     totalBuyers,
     buyersWithCompleteProfile,
@@ -56,15 +61,17 @@ export async function getBuyerOverview(request: Request) {
     buyersWithCartItems,
     checkoutReadyBuyers,
   ] = await prisma.$transaction([
-    prisma.buyerProfile.count(),
-    prisma.buyerProfile.count({ where: completeBuyerProfileWhere() }),
-    prisma.buyerProfile.count({ where: { addresses: { some: {} } } }),
-    prisma.buyerProfile.count({ where: { addresses: { none: {} } } }),
-    prisma.buyerProfile.count({ where: buyerWithCartItemsWhere() }),
-    prisma.buyerProfile.count({ where: checkoutReadyBuyerWhere() }),
+    prisma.buyerProfile.count({ where }),
+    prisma.buyerProfile.count({ where: andBuyerWhere(where, completeBuyerProfileWhere()) }),
+    prisma.buyerProfile.count({ where: andBuyerWhere(where, { addresses: { some: {} } }) }),
+    prisma.buyerProfile.count({ where: andBuyerWhere(where, { addresses: { none: {} } }) }),
+    prisma.buyerProfile.count({ where: andBuyerWhere(where, buyerWithCartItemsWhere()) }),
+    prisma.buyerProfile.count({ where: andBuyerWhere(where, checkoutReadyBuyerWhere()) }),
   ]);
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     totalBuyers,
     buyersWithCompleteProfile,
     buyersWithShippingAddress,
@@ -123,10 +130,16 @@ export async function getCartOverview(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const cutoff = getAbandonedCutoff(request);
   if ('response' in cutoff) return cutoff.response;
 
+  const where = cartUpdatedAtWhere(range);
+
   const carts = await prisma.cart.findMany({
+    where,
     include: { buyer: true, items: true },
   });
   const activeCarts = carts.filter((cart) => cart.items.length > 0);
@@ -135,6 +148,8 @@ export async function getCartOverview(request: Request) {
   );
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     totalCarts: carts.length,
     activeCarts: activeCarts.length,
     emptyCarts: carts.length - activeCarts.length,
@@ -153,8 +168,13 @@ export async function getActiveCarts(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const { page, skip, take } = getPagination(request);
-  const where = { items: { some: {} } } satisfies Prisma.CartWhereInput;
+  const where = andCartWhere(cartUpdatedAtWhere(range), {
+    items: { some: {} },
+  });
   const [total, carts] = await prisma.$transaction([
     prisma.cart.count({ where }),
     prisma.cart.findMany({
@@ -167,6 +187,8 @@ export async function getActiveCarts(request: Request) {
   ]);
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     page,
     take,
     total,
@@ -178,16 +200,19 @@ export async function getAbandonedCarts(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const cutoff = getAbandonedCutoff(request);
   if ('response' in cutoff) return cutoff.response;
 
   const { page, skip, take } = getPagination(request);
-  const where = {
+  const where = andCartWhere(cartUpdatedAtWhere(range), {
     items: {
       some: {},
       every: { updated_at: { lt: cutoff.cutoff } },
     },
-  } satisfies Prisma.CartWhereInput;
+  });
   const [total, carts] = await prisma.$transaction([
     prisma.cart.count({ where }),
     prisma.cart.findMany({
@@ -200,6 +225,8 @@ export async function getAbandonedCarts(request: Request) {
   ]);
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     page,
     take,
     total,
@@ -213,10 +240,18 @@ export async function getAverageCartItems(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
-  const carts = await prisma.cart.findMany({ include: { items: true } });
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
+  const carts = await prisma.cart.findMany({
+    where: cartUpdatedAtWhere(range),
+    include: { items: true },
+  });
   const activeCarts = carts.filter((cart) => cart.items.length > 0);
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     totalCarts: carts.length,
     activeCarts: activeCarts.length,
     averageDistinctItemsAcrossAllCarts: average(
@@ -238,8 +273,12 @@ export async function getTopCartProducts(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const limit = getLimit(request);
   const items = await prisma.cartItem.findMany({
+    where: cartItemUpdatedAtWhere(range),
     select: { product_id: true, cart_id: true, quantity: true },
   });
   const productMap = new Map<
@@ -276,15 +315,18 @@ export async function getTopCartProducts(request: Request) {
       lineCount: product.lineCount,
     }));
 
-  return Response.json({ limit, products });
+  return Response.json({ from: range.from, to: range.to, limit, products });
 }
 
 export async function getCartsByBuyer(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const { page, skip, take } = getPagination(request);
-  const where = buyerWithCartItemsWhere();
+  const where = buyerWithCartItemsWhere(cartUpdatedAtWhere(range));
   const [total, buyers] = await prisma.$transaction([
     prisma.buyerProfile.count({ where }),
     prisma.buyerProfile.findMany({
@@ -300,6 +342,8 @@ export async function getCartsByBuyer(request: Request) {
   ]);
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     page,
     take,
     total,
@@ -323,12 +367,20 @@ export async function getShippingAddressOverview(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
+  const where = shippingAddressCreatedAtWhere(range);
+
   const [totalAddresses, totalBuyers, buyersWithAddress, addresses] =
     await prisma.$transaction([
-      prisma.shippingAddress.count(),
+      prisma.shippingAddress.count({ where }),
       prisma.buyerProfile.count(),
-      prisma.buyerProfile.count({ where: { addresses: { some: {} } } }),
-      prisma.shippingAddress.findMany({ select: { city: true, province: true } }),
+      prisma.buyerProfile.count({ where: { addresses: { some: where } } }),
+      prisma.shippingAddress.findMany({
+        where,
+        select: { city: true, province: true },
+      }),
     ]);
   const cityCounts = countByString(addresses.map((address) => address.city));
   const provinceCounts = countByString(
@@ -336,6 +388,8 @@ export async function getShippingAddressOverview(request: Request) {
   );
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     totalAddresses,
     totalBuyers,
     buyersWithAddress,
@@ -351,22 +405,36 @@ export async function getShippingAddressesByCity(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const addresses = await prisma.shippingAddress.findMany({
+    where: shippingAddressCreatedAtWhere(range),
     select: { city: true },
   });
 
-  return Response.json({ cities: countByString(addresses.map((address) => address.city)) });
+  return Response.json({
+    from: range.from,
+    to: range.to,
+    cities: countByString(addresses.map((address) => address.city)),
+  });
 }
 
 export async function getShippingAddressesByProvince(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const addresses = await prisma.shippingAddress.findMany({
+    where: shippingAddressCreatedAtWhere(range),
     select: { province: true },
   });
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     provinces: countByString(addresses.map((address) => address.province)),
   });
 }
@@ -375,7 +443,11 @@ export async function getShippingAddressCompleteness(request: Request) {
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const addresses = await prisma.shippingAddress.findMany({
+    where: shippingAddressCreatedAtWhere(range),
     select: {
       label: true,
       address: true,
@@ -397,6 +469,8 @@ export async function getShippingAddressCompleteness(request: Request) {
   ).length;
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     totalAddresses: total,
     completeRequiredFields,
     incompleteRequiredFields: total - completeRequiredFields,
@@ -414,10 +488,13 @@ async function getBuyersByAddressPresence(request: Request, hasAddress: boolean)
   const authError = await requireBuyerApiKey(request);
   if (authError) return authError;
 
+  const range = getDateRange(request);
+  if ('response' in range) return range.response;
+
   const { page, skip, take } = getPagination(request);
-  const where = {
+  const where = andBuyerWhere(buyerCreatedAtWhere(range), {
     addresses: hasAddress ? { some: {} } : { none: {} },
-  } satisfies Prisma.BuyerProfileWhereInput;
+  });
   const [total, buyers] = await prisma.$transaction([
     prisma.buyerProfile.count({ where }),
     prisma.buyerProfile.findMany({
@@ -430,6 +507,8 @@ async function getBuyersByAddressPresence(request: Request, hasAddress: boolean)
   ]);
 
   return Response.json({
+    from: range.from,
+    to: range.to,
     page,
     take,
     total,
@@ -441,16 +520,52 @@ async function getBuyersByAddressPresence(request: Request, hasAddress: boolean)
 }
 
 function buyerCreatedAtWhere(range: DateRange): Prisma.BuyerProfileWhereInput {
+  return {
+    ...dateRangeWhere('created_at', range),
+  };
+}
+
+function cartUpdatedAtWhere(range: DateRange): Prisma.CartWhereInput {
+  return {
+    ...dateRangeWhere('updated_at', range),
+  };
+}
+
+function cartItemUpdatedAtWhere(range: DateRange): Prisma.CartItemWhereInput {
+  return {
+    ...dateRangeWhere('updated_at', range),
+  };
+}
+
+function shippingAddressCreatedAtWhere(
+  range: DateRange,
+): Prisma.ShippingAddressWhereInput {
+  return {
+    ...dateRangeWhere('created_at', range),
+  };
+}
+
+function dateRangeWhere(field: 'created_at' | 'updated_at', range: DateRange) {
   if (!range.from && !range.to) {
     return {};
   }
 
   return {
-    created_at: {
+    [field]: {
       ...(range.from ? { gte: range.from } : {}),
       ...(range.to ? { lte: range.to } : {}),
     },
   };
+}
+
+function andBuyerWhere(
+  ...conditions: Prisma.BuyerProfileWhereInput[]
+): Prisma.BuyerProfileWhereInput {
+  return { AND: conditions };
+}
+
+function andCartWhere(...conditions: Prisma.CartWhereInput[]): Prisma.CartWhereInput {
+  return { AND: conditions };
 }
 
 function completeBuyerProfileWhere(): Prisma.BuyerProfileWhereInput {
@@ -466,10 +581,13 @@ function completeBuyerProfileWhere(): Prisma.BuyerProfileWhereInput {
   };
 }
 
-function buyerWithCartItemsWhere(): Prisma.BuyerProfileWhereInput {
+function buyerWithCartItemsWhere(
+  cartWhere: Prisma.CartWhereInput = {},
+): Prisma.BuyerProfileWhereInput {
   return {
     cart: {
       is: {
+        ...cartWhere,
         items: { some: {} },
       },
     },
