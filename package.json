@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
     "db": "docker exec -it local-postgres psql -U postgres -d buyer-bonzai",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down"
@@ -41,6 +42,7 @@
     "eslint-config-next": "16.2.6",
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }
 }
